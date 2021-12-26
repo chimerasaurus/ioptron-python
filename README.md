@@ -10,6 +10,9 @@ All of this is being developed only against my CEM70-NUC. I am trying to write t
 
 My goal in writing this is to eventually package it up and use it as a library for an Alpaca endpoint.
 
+## Requirements
+Some of this is written in a way that requires Python > 3.7. There are also Python requirements in the `requirements.txt` file.
+
 ## Citations and sources
 
 This project has used parts of other OSS projects, or has implemented ideas shown in them, including: 
