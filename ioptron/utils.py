@@ -14,3 +14,6 @@ class utils:
     # Convert degrees to arc seconds
     def degrees_to_arc_seconds(self, seconds):
         return (seconds * 3600) / 0.01 # The value is 0.01 arc seconds
+
+    def get_mount_values(self, mount, value):
+        return self.mount_values[mount][value]

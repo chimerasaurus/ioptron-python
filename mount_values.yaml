@@ -1,15 +1,20 @@
 all:
-- tracking_speeds: 
-  - 0: off
-  - 1: 1
-  - 2: 2
-  - 3: 8
-  - 4: 16
-  - 5: 64
-  - 6: 128
-  - 7: 256
-  - 8: 512
-  - 9: max
+  tracking_speeds: 
+    1: 1
+    2: 2
+    3: 8
+    4: 16
+    5: 64
+    6: 128
+    7: 256
+    8: 512
+    9: max
 "0070":
-  - tracking_speeds:
-    - 9: 900
+  description: "CEM70G-EC, CEM70-EC, CEM70G, and CEM-70"
+  supported_models:
+    - CEM70G-EC
+    - CEM70-EC
+    - CEM70G 
+    - CEM-70
+  tracking_speeds:
+    9: 900
