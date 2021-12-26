@@ -59,8 +59,8 @@ is broken out by the same *command groups* as in the spec doc.
 - [ ] `:MwXXXXX#`
 - [x] `:MP1#`
 - [x] `:MP0#`
-- [ ] `:MH#`
-- [ ] `:MSH#`
+- [X] `:MH#`
+- [X] `:MSH#`
 - [ ] `:SPR0#`
 - [ ] `:SPR1#`
 - [ ] `:SPP0#`
@@ -70,8 +70,8 @@ is broken out by the same *command groups* as in the spec doc.
 - [ ] `:me#`
 - [ ] `:ms#`
 - [ ] `:mw#`
-- [ ] `:qR#`
-- [ ] `:qD#`
+- [x] `:qR#`
+- [x] `:qD#`
 - [ ] `:CM#`
 - [ ] `:QAP#`
 - [ ] `:SRATTTTTTTTT#`

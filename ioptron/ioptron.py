@@ -210,6 +210,20 @@ class ioptron:
         self.scope.send(':MountInfo#')
         return self.scope.recv()
 
+    # Go to zero position
+    def go_to_zero_position(self):
+        self.scope.send(':MH#')
+        self.is_slewing = True
+
+    # Go to zero position
+    def go_to_mechanical_zero_position(self):
+        ## TODO: This is a good place to log a WARN
+        if self.mount_version in ['0040', '0041', '0043', '0044', '0070', '0071','0120', '0121', '0122']:
+            self.scope.send(':MSH#')
+            self.is_slewing = True
+        # Maybe worth throwing an exception
+
+    # Park the moint (using pre-defined parking spot)
     def park(self):
         self.scope.send(':MP1#')
         response = self.scope.recv()
@@ -266,9 +280,20 @@ class ioptron:
         self.scope.send(string)
         return self.scope.recv()
 
-    def stop(self):
-        # Stop all movememnt
+    # Stop all movement
+    def stop_all_movement(self):
         self.scope.send(':Q#')
+        self.is_slewing = False
+
+    # Stop East or West movement (arrows or :me# or :mw#)
+    def stop_e_or_w_movement(self):
+        self.scope.send(':qR#')
+        self.is_slewing = False
+    
+    # Stop North or South movement (arrows or :me# or :mw#)
+    def stop_n_or_s_movement(self):
+        self.scope.send(':qD#')
+        self.is_slewing = False
     
     def unpark(self):
         self.scope.send(':MP0#')
