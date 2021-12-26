@@ -9,3 +9,13 @@ Commands have been implemented in a way ignoring how they may be put together, t
 All of this is being developed only against my CEM70-NUC. I am trying to write this in a way that would make it useful to other iOptron mounts with minor changes.
 
 My goal in writing this is to eventually package it up and use it as a library for an Alpaca endpoint.
+
+## Citations and sources
+
+This project has used parts of other OSS projects, or has implemented ideas shown in them, including: 
+
+* [python-lx200](https://github.com/telescopio-montemayor/python-lx200)
+
+This project uses the following open specifications:
+
+* [iOptron® Mount RS-232 Command Language](https://www.ioptron.com/v/ASCOM/RS-232_Command_Language2014V310.pdf)
