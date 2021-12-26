@@ -9,6 +9,13 @@ import time
 import ioptron.utils as utils
 
 # Data classes
+## Firmwares
+@dataclass
+class Firmwares:
+    mainboard: str = None
+    hand_controller: str = None
+    ra: str = None
+    dec: str = None
 ## GPS state
 @dataclass
 class GpsState:
@@ -52,14 +59,18 @@ class ioptron:
             self.scope = iotty.iotty(port=port)
             self.utils = utils.utils()
             self.scope.open()
-            self.get_mount_version()
         else:
             raise BadPortException
     
         # Assign default values
         self.longitude = None
         self.latitude = None
+        main_fw_info = self.get_main_firmwares()
+        motor_fw_info = self.get_motor_firmwares()
+        self.firmware = Firmwares(mainboard=main_fw_info[0], hand_controller=main_fw_info[1], \
+            ra=motor_fw_info[0], dec=motor_fw_info[1])
         self.gps = GpsState()
+        self.hand_controller_attached = False if 'XX' in self.firmware.hand_controller else True
         self.system_status = SystemStatus()
         self.tracking_rate = TrackingRate()
         self.time_source = TimeSource()
@@ -68,6 +79,7 @@ class ioptron:
         self.is_slewing = False
         self.is_tracking = False
         self.is_parked = None
+        self.mount_version = self.get_mount_version()
         self.type = None
         self.position = None
         self.is_home = None
@@ -76,6 +88,7 @@ class ioptron:
         self.pec = None
         self.pps = False
         self.last_update = time.time()
+
 
     # Destructor that gets called when the object is destroyed
     def __del__(self):
@@ -176,9 +189,26 @@ class ioptron:
         if hemisphere == '1':
             self.hemisphere.location = 'n'
 
+    # Get the main firmwares (mount, hand controller)
+    def get_main_firmwares(self):
+        self.scope.send(':FW1#')
+        returned_data = self.scope.recv()
+        main_fw = returned_data[0:6]
+        hc_fw = returned_data[6:12]
+        return (main_fw, hc_fw)
+
+    # Get the motor firmwares (ra, dec)
+    def get_motor_firmwares(self):
+        self.scope.send(':FW2#')
+        returned_data = self.scope.recv()
+        ra = returned_data[0:6]
+        dec = returned_data[6:12]
+        return (ra, dec)
+
+    # Get the version of the mount (this is the model)
     def get_mount_version(self):
         self.scope.send(':MountInfo#')
-        self.mount_version = self.scope.recv()
+        return self.scope.recv()
 
     def park(self):
         self.scope.send(':MP1#')
