@@ -1,6 +1,6 @@
 # ioptron-python
 
-This is a prototype Pythoh library for working with iOptron mounts.
+This is a prototype Python library for working with iOptron mounts.
 
 I am writing this to get experience with how the mount works and communicates over Serial. This is a heavy work in progress and is not intended for (real) use yet.
 Commands have been implemented in a way ignoring how they may be put together, though I have done some research on that topic 
