@@ -29,8 +29,8 @@ is broken out by the same *command groups* as in the spec doc.
 - [ ] `:SGF0#`
 - [ ] `:SGF1#`
 - [ ] `:SGsMMM#`
-- [ ] `:SDS0#`
-- [ ] `:SDS1#`
+- [x] `:SDS0#` (12/26)
+- [x] `:SDS1#` (12/26)
 - [ ] `:SUTXXXXXXXXXXXXX#`
 - [ ] `:SLOsTTTTTTTT#`
 - [ ] `:SLAsTTTTTTTT#`
@@ -40,7 +40,7 @@ is broken out by the same *command groups* as in the spec doc.
 - [ ] `:SALsnn#`
 - [ ] `:RGnnnn#`
 - [ ] `:SMTnnn#`
-- [ ] `:RAS#`
+- [ ] `:RAS#` (WIP, 1 todo)
 
 ## Mount Motion
 - [ ] `:MS1#`

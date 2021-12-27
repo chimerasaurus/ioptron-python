@@ -3,7 +3,8 @@
 
 # Imports
 from dataclasses import dataclass
-from serial.serialutil import XOFF
+from serial.serialutil import XOFF, SerialException
+from yaml.error import YAMLError
 import ioptron.iotty as iotty
 import time
 import ioptron.utils as utils
@@ -57,10 +58,9 @@ class ioptron:
     def __init__(self, port = ''):
         if port != '':
             self.scope = iotty.iotty(port=port)
-            self.utils = utils.utils()
             self.scope.open()
         else:
-            raise BadPortException
+            raise SerialException
     
         # Assign default values
         self.longitude = None
@@ -70,7 +70,7 @@ class ioptron:
         self.firmware = Firmwares(mainboard=main_fw_info[0], hand_controller=main_fw_info[1], \
             ra=motor_fw_info[0], dec=motor_fw_info[1])
         self.gps = GpsState()
-        self.hand_controller_attached = False if 'XX' in self.firmware.hand_controller else True
+        self.hand_controller_attached = False if 'xx' in self.firmware.hand_controller else True
         self.system_status = SystemStatus()
         self.tracking_rate = TrackingRate()
         self.time_source = TimeSource()
@@ -87,8 +87,8 @@ class ioptron:
         self.pec_recorded = False
         self.pec = None
         self.pps = False
+        self.mount_config_data = utils.parse_mount_config_file('ioptron/mount_values.yaml', self.mount_version)
         self.last_update = time.time()
-
 
     # Destructor that gets called when the object is destroyed
     def __del__(self):
@@ -108,8 +108,8 @@ class ioptron:
         print(response_data)
 
         # Parse latitude and longitude
-        self.longitude = self.utils.arc_seconds_to_degrees(int(response_data[0:9]))
-        self.latitude = self.utils.arc_seconds_to_degrees(int(response_data[9:17])) - 90 # Val is +90
+        self.longitude = utils.arc_seconds_to_degrees(int(response_data[0:9]))
+        self.latitude = utils.arc_seconds_to_degrees(int(response_data[9:17])) - 90 # Val is +90
         
         # Parse GPS state
         gps_state = response_data[17:18]
@@ -168,7 +168,7 @@ class ioptron:
         # Parse moving speed
         moving_speed = response_data[20:21]
         self.moving_speed.code = moving_speed
-        self.moving_speed.description = self.parse_moving_speed(moving_speed)
+        self.moving_speed.description = self.parse_moving_speed(int(moving_speed))
 
         # Parse the time source
         time_source = response_data[21:22]
@@ -238,26 +238,7 @@ class ioptron:
     # Parse moving speed
     ## In the future, we could use a YAML based dict to decide stuff like max/model
     def parse_moving_speed(self, rate):
-        if rate == '1':
-            return '1x'
-        elif rate == '2':
-            return '2x'
-        elif rate == '3':
-            return '8x'
-        elif rate == '4':
-            return '16x'
-        elif rate == '5':
-            return '64x'
-        elif rate == '6':
-            return '128x'
-        elif rate == '7':
-            return '256x'
-        elif rate == '8':
-            return '512x'
-        elif rate == '9':
-            return 'max' # Depends on model
-        else:
-            return 'off'
+        return str(self.mount_config_data['tracking_speeds'][rate]) + 'x'
         
     # Parse tracking rate
     ## In the future, we could use a YAML based dict to decide stuff like max/model
@@ -274,11 +255,26 @@ class ioptron:
             return 'custom'
         else:
             return 'off'
+    
+    # Reset all settings (time is unchanged)
+    # Must pass a TRUE to indicate you _really_ want to do this
+    def reset_settings(self, confirm: bool):
+        if confirm == True:
+            self.scope.send(':RAS#')
+            self.get_all_kinds_of_status
+            # TODO: Update other info once implemented
 
     def send_str(self, string):
         # Send a string
         self.scope.send(string)
         return self.scope.recv()
+    
+    # Set daylight savings time (on = True, off = False)
+    def set_daylight_savings(self, dst: bool):
+        if dst == True:
+            self.scope.send(':SDS1#')
+        else:
+            self.scope.send(':SDS#0')
 
     # Stop all movement
     def stop_all_movement(self):
