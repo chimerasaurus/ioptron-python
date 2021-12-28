@@ -1,5 +1,7 @@
 # iOptron telescope Python interface
-## Based on onstep-python
+# This is intended to understand how the mount works
+# If I am going to trash their software (it IS crap) I need to understand it
+# James Malone, 2021
 
 # Imports
 from dataclasses import dataclass
@@ -35,6 +37,7 @@ class SystemStatus:
 class TrackingRate:
     code: int = None
     description: str = "off"
+    custom: float = 1.0000
 
 ## Moving speed
 @dataclass
@@ -99,6 +102,7 @@ class ioptron:
         self.pps = False
         self.mount_config_data = utils.parse_mount_config_file('ioptron/mount_values.yaml', self.mount_version)
         self.last_update = time.time()
+
         # Time information
         self.time = TimeInfo()
 
@@ -135,6 +139,7 @@ class ioptron:
             self.gps.locked = True
         
         # Parse the system status
+        # TODO: Refactor using YAML config
         status_code = response_data[18:19]
         self.system_status.code = status_code
         if status_code == '0':
@@ -201,6 +206,13 @@ class ioptron:
         if hemisphere == '1':
             self.hemisphere.location = 'n'
 
+    # Get the custom tracking rate, if set
+    def get_custom_tracking_rate(self):
+        self.scope.send(':GTR#')
+        returned_data = self.scope.recv()
+        # Set the value and strip the control '#' at the end (response is d{5})
+        self.tracking_rate.custom = bool(returned_data[:5])
+
     # Get the main firmwares (mount, hand controller)
     def get_main_firmwares(self):
         self.scope.send(':FW1#')
@@ -257,25 +269,12 @@ class ioptron:
         return self.is_parked
     
     # Parse moving speed
-    ## In the future, we could use a YAML based dict to decide stuff like max/model
     def parse_moving_speed(self, rate):
         return str(self.mount_config_data['tracking_speeds'][rate]) + 'x'
         
     # Parse tracking rate
-    ## In the future, we could use a YAML based dict to decide stuff like max/model
     def parse_tracking_rate(self, rate):
-        if rate == '0':
-            return 'sidereal'
-        elif rate == '1':
-            return 'lunar'
-        elif rate == '2':
-            return 'solar'
-        elif rate == '3':
-            return 'king'
-        elif rate == '4':
-            return 'custom'
-        else:
-            return 'off'
+        return str(self.mount_config_data['tracking_rates'][rate])
     
     # Reset all settings (time is unchanged)
     # Must pass a TRUE to indicate you _really_ want to do this
@@ -289,12 +288,12 @@ class ioptron:
         # Send a string
         self.scope.send(string)
         return self.scope.recv()
-    
-    # Set the current UTC time 
-    def set_time(self):
-        j2k_time = str(utils.get_utc_time_in_j2k()).zfill(13)
-        time_command = ":SUT" + j2k_time + "#"
-        self.scope.send(time_command)
+
+    # Set a custom tracking rate
+    def set_custom_tracking_rate(self, rate):
+        formatted_rate = (f"{float(rate):.6f}")
+        send_command = ":RR" + formatted_rate + "#"
+        self.scope.send(send_command)
 
     # Set daylight savings time (on = True, off = False)
     def set_daylight_savings(self, dst: bool):
@@ -305,6 +304,18 @@ class ioptron:
         
         # Update time information after setting
         self.get_time_information()
+    
+    # Set the current UTC time 
+    def set_time(self):
+        j2k_time = str(utils.get_utc_time_in_j2k()).zfill(13)
+        time_command = ":SUT" + j2k_time + "#"
+        self.scope.send(time_command)
+    
+    # Set the time zone offset from UTC
+    def set_timezone_offset(self, offset = utils.get_utc_offset_min):
+        offset.zfill(3)
+        tz_command = ":SGs" + offset + "#"
+        self.scope.send(tz_command)
 
     # Stop all movement
     def stop_all_movement(self):

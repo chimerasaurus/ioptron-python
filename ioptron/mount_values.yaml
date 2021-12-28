@@ -13,3 +13,12 @@
     7: 256
     8: 512
     9: 900
+  tracking_rates:
+    0: sidereal
+    1: lunar
+    2: solar
+    3: king
+    4: custom
+  capabilities:
+    encoders: False
+    pec: True

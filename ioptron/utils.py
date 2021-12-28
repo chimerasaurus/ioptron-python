@@ -1,5 +1,5 @@
 # Imports
-import datetime
+from datetime import datetime
 import time
 import yaml
 
@@ -20,6 +20,11 @@ def convert_unix_to_formatted(unix_ms):
 # Convert degrees to arc seconds
 def degrees_to_arc_seconds(seconds):
     return (seconds * 3600) / 0.01 # The value is 0.01 arc seconds
+
+# Get the current UTC offset
+def get_utc_offset_min():
+    offset = time.timezone/60
+    return(offset)
 
 # Get the current UTC time in J2000
 def get_utc_time_in_j2k():

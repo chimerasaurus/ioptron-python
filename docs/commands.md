@@ -9,7 +9,7 @@ is broken out by the same *command groups* as in the spec doc.
 - [x] `:GUT#` (12/27 - untested)
 - [ ] `:GEP#`
 - [ ] `:GAC#` 
-- [ ] `:GTR#`
+- [x] `:GTR#` (12/27 - untested)
 - [ ] `:GPC#`
 - [ ] `:GSR#`
 - [ ] `:GAL#`
@@ -28,7 +28,7 @@ is broken out by the same *command groups* as in the spec doc.
 - [ ] `:SRn#`
 - [ ] `:SGF0#`
 - [ ] `:SGF1#`
-- [ ] `:SGsMMM#`
+- [x] `:SGsMMM#` (12/27 - untested)
 - [x] `:SDS0#` (12/26)
 - [x] `:SDS1#` (12/26)
 - [x] `:SUTXXXXXXXXXXXXX#` (12/27 - untested)
@@ -65,7 +65,7 @@ is broken out by the same *command groups* as in the spec doc.
 - [ ] `:SPR1#`
 - [ ] `:SPP0#`
 - [ ] `:SPP1#`
-- [ ] `:RRnnnnn#`
+- [x] `:RRnnnnn#` (12/27 - untested)
 - [ ] `:mn#`
 - [ ] `:me#`
 - [ ] `:ms#`
