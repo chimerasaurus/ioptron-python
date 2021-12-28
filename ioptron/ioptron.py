@@ -290,6 +290,12 @@ class ioptron:
         self.scope.send(string)
         return self.scope.recv()
     
+    # Set the current UTC time 
+    def set_time(self):
+        j2k_time = str(utils.get_utc_time_in_j2k()).zfill(13)
+        time_command = ":SUT" + j2k_time + "#"
+        self.scope.send(time_command)
+
     # Set daylight savings time (on = True, off = False)
     def set_daylight_savings(self, dst: bool):
         if dst == True:

@@ -21,6 +21,13 @@ def convert_unix_to_formatted(unix_ms):
 def degrees_to_arc_seconds(seconds):
     return (seconds * 3600) / 0.01 # The value is 0.01 arc seconds
 
+# Get the current UTC time in J2000
+def get_utc_time_in_j2k():
+    j2k_time = datetime(2000, 1, 1, 12, 00)
+    utc = datetime.utcnow()
+    difference = utc - j2k_time
+    return(int(difference.total_seconds() * 1000))
+
 # Parse the mount config data in a JSON file
 # this means it isn't needed to hard-code mount config
 def parse_mount_config_file(file, model):
