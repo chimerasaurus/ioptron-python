@@ -17,6 +17,7 @@ class Firmwares:
     hand_controller: str = None
     ra: str = None
     dec: str = None
+
 ## GPS state
 @dataclass
 class GpsState:
@@ -47,6 +48,15 @@ class MovingSpeed:
 class TimeSource:
     code: int = None
     description: str = "unset"
+
+## Time information
+@dataclass
+class TimeInfo:
+    utc_offset: int = None
+    dst: bool = None
+    jd: int = None
+    unix: float = None
+    formatted: str = None
 
 ## Hemisphere
 @dataclass
@@ -89,6 +99,8 @@ class ioptron:
         self.pps = False
         self.mount_config_data = utils.parse_mount_config_file('ioptron/mount_values.yaml', self.mount_version)
         self.last_update = time.time()
+        # Time information
+        self.time = TimeInfo()
 
     # Destructor that gets called when the object is destroyed
     def __del__(self):
@@ -210,6 +222,15 @@ class ioptron:
         self.scope.send(':MountInfo#')
         return self.scope.recv()
 
+    # Get time-related information. This command returns a ton of data from the mount
+    def get_time_information(self):
+        response_data = self.scope.send(':GUT#')
+        self.time.utc_offset = int(response_data[0:4])
+        self.time.dst = False if response_data[4:5] == '0' else True
+        self.time.jd = response_data[5:]
+        self.time.unix = utils.convert_j2k_to_unix(self.time.jd)
+        self.time.formatted = utils.convert_unix_to_formatted(self.time.unix)
+
     # Go to zero position
     def go_to_zero_position(self):
         self.scope.send(':MH#')
@@ -275,6 +296,9 @@ class ioptron:
             self.scope.send(':SDS1#')
         else:
             self.scope.send(':SDS#0')
+        
+        # Update time information after setting
+        self.get_time_information()
 
     # Stop all movement
     def stop_all_movement(self):

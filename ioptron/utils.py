@@ -1,4 +1,6 @@
 # Imports
+import datetime
+import time
 import yaml
 
 # A utility class to hold utility and common methods
@@ -6,6 +8,14 @@ import yaml
 # Convert arc seconds with 0.01 percision to degrees
 def arc_seconds_to_degrees(seconds):
     return (seconds / 3600) * 0.01 # The value is 0.01 arc seconds
+
+# Convert J2000 in ms to formatted UNIX in ms
+def convert_j2k_to_unix(ms):
+    converted = datetime.datetime(2000,1,1,12,0) + datetime.timedelta(milliseconds=ms)
+    return time.mktime(converted.timetuple())
+
+def convert_unix_to_formatted(unix_ms):
+    return datetime.utcfromtimestamp(int(unix_ms)).strftime("%m/%d/%Y, %H:%M:%S.%f")[:-3]
 
 # Convert degrees to arc seconds
 def degrees_to_arc_seconds(seconds):
