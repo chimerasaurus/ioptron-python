@@ -317,6 +317,25 @@ class ioptron:
         tz_command = ":SGs" + offset + "#"
         self.scope.send(tz_command)
 
+    # Toggle PEC - private method
+    def _toggle_pec_recording(self, on: bool):
+        if self.mount_config_data['type'] == 'equatorial' and \
+            self.mount_config_data['capabilities']['pec'] == True and \
+            self.mount_config_data['capabilities']['encoders'] == False:
+            # Default is off
+            pec_command = ":SPR1#" if on == True else ":SPR0#"
+            self.scope.send(pec_command)
+        else:
+            print("PEC recording not usable with this mount")
+
+    # Start recording PEC
+    def start_recording_pec(self):
+        self._toggle_pec_recording(True)
+
+    # Stop recording PEC
+    def stop_recording_pec(self):
+        self._toggle_pec_recording(False)
+
     # Stop all movement
     def stop_all_movement(self):
         self.scope.send(':Q#')

@@ -22,3 +22,4 @@
   capabilities:
     encoders: False
     pec: True
+  type: equatorial 

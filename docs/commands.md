@@ -61,8 +61,8 @@ is broken out by the same *command groups* as in the spec doc.
 - [x] `:MP0#`
 - [X] `:MH#`
 - [X] `:MSH#`
-- [ ] `:SPR0#`
-- [ ] `:SPR1#`
+- [x] `:SPR0#` (12/27 - untested)
+- [x] `:SPR1#` (12/27 - untested)
 - [ ] `:SPP0#`
 - [ ] `:SPP1#`
 - [x] `:RRnnnnn#` (12/27 - untested)
