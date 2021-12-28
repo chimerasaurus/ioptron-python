@@ -18,6 +18,7 @@ Some of this is written in a way that requires Python > 3.7. There are also Pyth
 This project has used parts of other OSS projects, or has implemented ideas shown in them, including: 
 
 * [python-lx200](https://github.com/telescopio-montemayor/python-lx200)
+* [onstep-python](https://github.com/kbahey/onstep-python)
 
 This project uses the following open specifications:
 
