@@ -1,5 +1,4 @@
 import ioptron.ioptron as iopt 
-import time
 
 scope = iopt.ioptron('COM5')
 print("Version #:  {}".format(scope.mount_version))

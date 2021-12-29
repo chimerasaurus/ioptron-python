@@ -13,6 +13,9 @@ My goal in writing this is to eventually package it up and use it as a library f
 ## Requirements
 Some of this is written in a way that requires Python > 3.7. There are also Python requirements in the `requirements.txt` file.
 
+## Running
+You will need to have your `PYTHONPATH` set up to run these right now, since it's not properly modularized.
+
 ## Citations and sources
 
 This project has used parts of other OSS projects, or has implemented ideas shown in them, including: 
