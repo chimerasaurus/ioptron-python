@@ -5,11 +5,11 @@
 
 # Imports
 from dataclasses import dataclass
-from serial.serialutil import XOFF, SerialException
-from yaml.error import YAMLError
-import ioptron.iotty as iotty
 import time
-import ioptron.utils as utils
+from serial.serialutil import SerialException
+from ioptron import iotty
+from ioptron import utils
+
 
 # Data classes
 ## DEC data
@@ -87,7 +87,7 @@ class ioptron:
             self.scope.open()
         else:
             raise SerialException
-    
+
         # Assign default values
         self.longitude = None
         self.latitude = None
@@ -112,7 +112,8 @@ class ioptron:
         self.pec_recorded = False
         self.pec = None
         self.pps = False
-        self.mount_config_data = utils.parse_mount_config_file('ioptron/mount_values.yaml', self.mount_version)
+        self.mount_config_data = \
+            utils.parse_mount_config_file('ioptron/mount_values.yaml', self.mount_version)
         self.last_update = time.time()
 
         # Time information
@@ -143,7 +144,7 @@ class ioptron:
         # Parse latitude and longitude
         self.longitude = utils.arc_seconds_to_degrees(int(response_data[0:9]))
         self.latitude = utils.arc_seconds_to_degrees(int(response_data[9:17])) - 90 # Val is +90
-        
+
         # Parse GPS state
         gps_state = response_data[17:18]
         if gps_state == '0':
@@ -154,28 +155,28 @@ class ioptron:
         elif gps_state == '2':
             self.gps.available = True
             self.gps.locked = True
-        
+
         # Parse the system status
         # TODO: Refactor using YAML config
         status_code = response_data[18:19]
         self.system_status.code = status_code
         if status_code == '0':
-            self.system_status.description = "stopped at non-zero position" 
+            self.system_status.description = "stopped at non-zero position"
             self.is_slewing = False
             self.is_tracking = False
         elif status_code == '1':
             self.system_status.description = "tracking with periodic error correction disabled"
             self.is_slewing = False
             self.is_tracking = True
-            self.pec = False 
+            self.pec = False
         elif status_code == '2':
             self.system_status.description = "slewing"
             self.is_slewing = True
-            self.is_tracking = False 
+            self.is_tracking = False
         elif status_code == '3':
             self.system_status.description = "auto-guiding"
             self.is_slewing = False
-            self.is_tracking = True 
+            self.is_tracking = True
         elif status_code == '4':
             self.system_status.description = "meridian flipping"
             self.is_slewing = True
@@ -183,12 +184,12 @@ class ioptron:
             self.system_status.description = "tracking with periodic error correction enabled"
             self.is_slewing = False
             self.is_tracking = True
-            self.pec = True 
+            self.pec = True
         elif status_code == '6':
             self.system_status.description = "parked"
             self.is_slewing = False
             self.is_tracking = False
-            self.is_parked = True 
+            self.is_parked = True
         elif status_code == '7':
             self.system_status.description = "stopped at zero position (home position)"
             self.is_slewing = False
@@ -210,10 +211,10 @@ class ioptron:
         if time_source == '1':
             self.time_source.description = "local port - RS232 or ethernet"
         elif time_source == '2':
-            self.time_source.descriptio = "hand controller"
+            self.time_source.description = "hand controller"
         elif time_source == '3':
-            self.time_source.description == "gps"
-        
+            self.time_source.description = "gps"
+
         # Parse the hemisphere
         hemisphere = response_data[22:23]
         self.hemisphere.code = hemisphere
@@ -241,9 +242,9 @@ class ioptron:
     def get_motor_firmwares(self):
         self.scope.send(':FW2#')
         returned_data = self.scope.recv()
-        ra = returned_data[0:6]
+        right_asc = returned_data[0:6]
         dec = returned_data[6:12]
-        return (ra, dec)
+        return (right_asc, dec)
 
     # Get the version of the mount (this is the model)
     def get_mount_version(self):
@@ -256,8 +257,8 @@ class ioptron:
         returned_data = self.scope.recv()
 
         # RA
-        ra = returned_data[0:10]
-        self.ra.arcseconds = float(ra)
+        right_asc = returned_data[0:10]
+        self.ra.arcseconds = float(right_asc)
         self.ra.dms = utils.arc_seconds_to_degrees(self.ra.arcseconds)
 
         # DEC
@@ -273,7 +274,8 @@ class ioptron:
 
             # Counterweight direction
             counterweight_direction = returned_data[20:21]
-            self.counterweight_direction = self.mount_config_data['counterweight_direction'][int(counterweight_direction)]
+            self.counterweight_direction = \
+                self.mount_config_data['counterweight_direction'][int(counterweight_direction)]
 
     # Get time-related information. This command returns a ton of data from the mount
     def get_time_information(self):
@@ -294,15 +296,18 @@ class ioptron:
     def go_to_zero_position(self):
         self.scope.send(':MH#')
         self.is_slewing = True
-        response_data = self.scope.recv()
+        # Get the response; do nothing with it
+        self.scope.recv()
 
     # Go to zero position
     def go_to_mechanical_zero_position(self):
         ## TODO: This is a good place to log a WARN
-        if self.mount_version in ['0040', '0041', '0043', '0044', '0070', '0071','0120', '0121', '0122']:
+        # ['0040', '0041', '0043', '0044', '0070', '0071','0120', '0121', '0122']
+        if self.mount_config_data['mechanical_zero'] is True:
             self.scope.send(':MSH#')
             self.is_slewing = True
-            response_data = self.scope.recv()
+            # Get the response; do nothing with it
+            self.scope.recv()
         # Maybe worth throwing an exception
 
     # Park the moint (using pre-defined parking spot)
@@ -316,21 +321,21 @@ class ioptron:
             # Mount was mot parked OK
             self.is_parked = False
         return self.is_parked
-    
+
     # Parse moving speed
     def parse_moving_speed(self, rate):
         return str(self.mount_config_data['tracking_speeds'][rate]) + 'x'
-        
+
     # Parse tracking rate
     def parse_tracking_rate(self, rate):
         return str(self.mount_config_data['tracking_rates'][rate])
-    
+
     # Reset all settings (time is unchanged)
     # Must pass a TRUE to indicate you _really_ want to do this
     def reset_settings(self, confirm: bool):
-        if confirm == True:
+        if confirm is True:
             self.scope.send(':RAS#')
-            self.get_all_kinds_of_status
+            self.get_all_kinds_of_status()
             # TODO: Update other info once implemented
 
     def send_str(self, string):
@@ -347,35 +352,37 @@ class ioptron:
 
     # Set daylight savings time (on = True, off = False)
     def set_daylight_savings(self, dst: bool):
-        if dst == True:
+        if dst is True:
             self.scope.send(':SDS1#')
         else:
             self.scope.send(':SDS0#')
-        response_data = self.scope.recv()
-        
+        # Get the response; do nothing with it
+        self.scope.recv()
+
         # Update time information after setting
         #self.get_time_information()
-    
-    # Set the current UTC time 
+
+    # Set the current UTC time
     def set_time(self):
         j2k_time = str(utils.get_utc_time_in_j2k()).zfill(13)
         time_command = ":SUT" + j2k_time + "#"
         self.scope.send(time_command)
-    
+
     # Set the time zone offset from UTC
     def set_timezone_offset(self, offset = utils.get_utc_offset_min()):
         tz_offset = str(offset).zfill(3)
         tz_command = ":SG" + tz_offset + "#" if offset < 0 else ":SG+" + tz_offset + "#"
         self.scope.send(tz_command)
-        response_data = self.scope.recv()
+        # Get the response; do nothing with it
+        self.scope.recv()
 
     # Toggle PEC - private method
-    def _toggle_pec_recording(self, on: bool):
+    def _toggle_pec_recording(self, turn_on: bool):
         if self.mount_config_data['type'] == 'equatorial' and \
-            self.mount_config_data['capabilities']['pec'] == True and \
-            self.mount_config_data['capabilities']['encoders'] == False:
+            self.mount_config_data['capabilities']['pec'] is True and \
+            self.mount_config_data['capabilities']['encoders'] is False:
             # Default is off
-            pec_command = ":SPR1#" if on == True else ":SPR0#"
+            pec_command = ":SPR1#" if turn_on is True else ":SPR0#"
             self.scope.send(pec_command)
         else:
             print("PEC recording not usable with this mount")
@@ -397,18 +404,18 @@ class ioptron:
     def stop_e_or_w_movement(self):
         self.scope.send(':qR#')
         self.is_slewing = False
-    
+
     # Stop North or South movement (arrows or :me# or :mw#)
     def stop_n_or_s_movement(self):
         self.scope.send(':qD#')
         self.is_slewing = False
-    
+
     def unpark(self):
         self.scope.send(':MP0#')
         # Always returns a 1
         self.is_parked = False
         return self.is_parked
-    
+
     def update_status(self):
         # Do this at max of every one second
         current_time = time.time()

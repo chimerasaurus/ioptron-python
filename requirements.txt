@@ -1,3 +1,4 @@
 ###### Version does not matter ######
 pyserial
 pyyaml
+pylint

@@ -29,4 +29,5 @@
   capabilities:
     encoders: False
     pec: True
+    mechanical_zero: True
   type: equatorial 
