@@ -8,7 +8,7 @@ is broken out by the same *command groups* as in the spec doc.
 - [x] `:GLS#`
 - [x] `:GUT#` (12/27)
 - [x] `:GEP#` (12/28 - untested)
-- [ ] `:GAC#` 
+- [x] `:GAC#` (12/29 - untested)
 - [x] `:GTR#` (12/27 - untested)
 - [ ] `:GPC#`
 - [ ] `:GSR#`

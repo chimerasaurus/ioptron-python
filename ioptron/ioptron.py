@@ -12,6 +12,18 @@ from ioptron import utils
 
 
 # Data classes
+## Altitude data
+@dataclass
+class Altitude:
+    arcseconds: float = None
+    dms: float = None
+
+## Azimuth data
+@dataclass
+class Azimuth:
+    arcseconds: float = None
+    dms: float = None
+
 ## DEC data
 @dataclass
 class DEC:
@@ -124,6 +136,8 @@ class ioptron:
         self.dec = DEC()
         self.pier_side = None
         self.counterweight_direction = None
+        self.altitude - Altitude()
+        self.azimuth = Azimuth()
 
     # Destructor that gets called when the object is destroyed
     def __del__(self):
@@ -223,62 +237,79 @@ class ioptron:
         if hemisphere == '1':
             self.hemisphere.location = 'n'
 
-    # Get the custom tracking rate, if set
+    def get_alt_and_az(self):
+        """Get the altitude and azimuth of the mount's current direction."""
+        self.scope.send(':GAC#')
+        returned_data = self.scope.recv()
+
+        # Alt
+        right_asc = returned_data[0:9]
+        self.ra.arcseconds = float(right_asc)
+        self.ra.dms = utils.arc_seconds_to_degrees(self.ra.arcseconds)
+
+        # Az
+        dec = returned_data[9:18]
+        self.dec.arcseconds = float(dec)
+        self.dec.dms = utils.arc_seconds_to_degrees(self.dec.arcseconds)
+
     def get_custom_tracking_rate(self):
+        """Get the custom tracking rate, if it is set. Otherwise will be 1.000."""
         self.scope.send(':GTR#')
         returned_data = self.scope.recv()
         # Set the value and strip the control '#' at the end (response is d{5})
         self.tracking_rate.custom = bool(returned_data[:5])
 
-    # Get the main firmwares (mount, hand controller)
     def get_main_firmwares(self):
+        """Get the firmware(s) of the mount and hand controller, if it is attached, otherwise
+        a null value (xxxxxx) is used for the HC firmware."""
         self.scope.send(':FW1#')
         returned_data = self.scope.recv()
         main_fw = returned_data[0:6]
         hc_fw = returned_data[6:12]
         return (main_fw, hc_fw)
 
-    # Get the motor firmwares (ra, dec)
     def get_motor_firmwares(self):
+        """Get the firmware of the motors (ra and dec)."""
         self.scope.send(':FW2#')
         returned_data = self.scope.recv()
         right_asc = returned_data[0:6]
         dec = returned_data[6:12]
         return (right_asc, dec)
 
-    # Get the version of the mount (this is the model)
     def get_mount_version(self):
+        """Get the model / version of the mount. Returns the model number."""
         self.scope.send(':MountInfo#')
         return self.scope.recv()
 
-    # Get the direction we are pointed at
     def get_ra_and_dec(self):
+        """Get the RA and DEC of the telescope's current pointing position."""
         self.scope.send(':GEP#')
         returned_data = self.scope.recv()
 
         # RA
-        right_asc = returned_data[0:10]
+        right_asc = returned_data[0:9]
         self.ra.arcseconds = float(right_asc)
         self.ra.dms = utils.arc_seconds_to_degrees(self.ra.arcseconds)
 
         # DEC
-        dec = returned_data[10:19]
+        dec = returned_data[9:18]
         self.dec.arcseconds = float(dec)
         self.dec.dms = utils.arc_seconds_to_degrees(self.dec.arcseconds)
 
         # The following only works for eq mounts
         if self.mount_config_data['type'] == "equatorial":
             # Pier side
-            pier_side = returned_data[19:20]
+            pier_side = returned_data[18:19]
             self.pier_side = self.mount_config_data['pier_sides'][int(pier_side)]
 
             # Counterweight direction
-            counterweight_direction = returned_data[20:21]
+            counterweight_direction = returned_data[19:20]
             self.counterweight_direction = \
                 self.mount_config_data['counterweight_direction'][int(counterweight_direction)]
 
-    # Get time-related information. This command returns a ton of data from the mount
     def get_time_information(self):
+        """Get all time information from the mount, including it's time,
+        timezone, and DST setting."""
         self.scope.send(':GUT#')
         response_data = self.scope.recv()
         # Sometimes the response includes a leading 1; I assume it means update OK or new data?
@@ -361,22 +392,22 @@ class ioptron:
         # Update time information after setting
         #self.get_time_information()
 
-    # Set the current UTC time
     def set_time(self):
+        """Set the current time on the moint to the current computer's time. Sets to UTC."""
         j2k_time = str(utils.get_utc_time_in_j2k()).zfill(13)
         time_command = ":SUT" + j2k_time + "#"
         self.scope.send(time_command)
 
-    # Set the time zone offset from UTC
     def set_timezone_offset(self, offset = utils.get_utc_offset_min()):
+        """Sets the time zone offset on the mount to the computer's TZ offset."""
         tz_offset = str(offset).zfill(3)
         tz_command = ":SG" + tz_offset + "#" if offset < 0 else ":SG+" + tz_offset + "#"
         self.scope.send(tz_command)
         # Get the response; do nothing with it
         self.scope.recv()
 
-    # Toggle PEC - private method
     def _toggle_pec_recording(self, turn_on: bool):
+        """PRIVATE method for toggling PEC recording on and off."""
         if self.mount_config_data['type'] == 'equatorial' and \
             self.mount_config_data['capabilities']['pec'] is True and \
             self.mount_config_data['capabilities']['encoders'] is False:
@@ -386,37 +417,44 @@ class ioptron:
         else:
             print("PEC recording not usable with this mount")
 
-    # Start recording PEC
     def start_recording_pec(self):
+        """Start recording the periodic error. Only used in eq mounts without encoders."""
         self._toggle_pec_recording(True)
 
-    # Stop recording PEC
     def stop_recording_pec(self):
+        """Stop recording the periodic error. Only used in eq mounts without encoders."""
         self._toggle_pec_recording(False)
 
-    # Stop all movement
     def stop_all_movement(self):
+        """Stop all slewing no matter the source of slewing or the direction(s)."""
         self.scope.send(':Q#')
         self.is_slewing = False
 
-    # Stop East or West movement (arrows or :me# or :mw#)
     def stop_e_or_w_movement(self):
+        """Stop movement in the east or west directions. Useful when using the
+        commands to slew in the specfic directions. Mimics the arrow buttons on
+        the hand controller."""
         self.scope.send(':qR#')
         self.is_slewing = False
 
-    # Stop North or South movement (arrows or :me# or :mw#)
     def stop_n_or_s_movement(self):
+        """Stop movement in the north or south directions. Useful when using the
+        commands to slew in the specfic directions. Mimics the arrow buttons on
+        the hand controller."""
         self.scope.send(':qD#')
         self.is_slewing = False
 
     def unpark(self):
+        """Unpark the moint. If the mount is unparked already, this does nothing. """
         self.scope.send(':MP0#')
         # Always returns a 1
         self.is_parked = False
         return self.is_parked
 
     def update_status(self):
-        # Do this at max of every one second
+        """Call all of the (4) update commands to get the latest status of the mount."""
         current_time = time.time()
         if current_time - self.last_update > 1:
-            self.scope.send(':MP0#')
+            self.get_all_kinds_of_status()
+            self.get_time_information()
+            self.get_ra_and_dec()
