@@ -16,19 +16,19 @@ from ioptron import utils
 @dataclass
 class Altitude:
     arcseconds: float = None
-    dms: float = None
+    degrees: float = None
 
 ## Azimuth data
 @dataclass
 class Azimuth:
     arcseconds: float = None
-    dms: float = None
+    degrees: float = None
 
 ## DEC data
 @dataclass
 class DEC:
     arcseconds: float = None
-    dms: float = None
+    degrees: float = None
 
 ## Firmwares
 @dataclass
@@ -48,7 +48,7 @@ class GpsState:
 @dataclass
 class RA:
     arcseconds: float = None
-    dms: float = None
+    degrees: float = None
 
 ## System status
 @dataclass
@@ -245,12 +245,12 @@ class ioptron:
         # Alt
         right_asc = returned_data[0:9]
         self.ra.arcseconds = float(right_asc)
-        self.ra.dms = utils.arc_seconds_to_degrees(self.ra.arcseconds)
+        self.ra.degrees = utils.arc_seconds_to_degrees(self.ra.arcseconds)
 
         # Az
         dec = returned_data[9:18]
         self.dec.arcseconds = float(dec)
-        self.dec.dms = utils.arc_seconds_to_degrees(self.dec.arcseconds)
+        self.dec.degrees = utils.arc_seconds_to_degrees(self.dec.arcseconds)
 
     def get_custom_tracking_rate(self):
         """Get the custom tracking rate, if it is set. Otherwise will be 1.000."""
@@ -287,14 +287,15 @@ class ioptron:
         returned_data = self.scope.recv()
 
         # RA
+        ## TODO: We should report RA in HHMMSS
         right_asc = returned_data[0:9]
         self.ra.arcseconds = float(right_asc)
-        self.ra.dms = utils.arc_seconds_to_degrees(self.ra.arcseconds)
+        self.ra.degrees = utils.arc_seconds_to_degrees(self.ra.arcseconds)
 
         # DEC
         dec = returned_data[9:18]
         self.dec.arcseconds = float(dec)
-        self.dec.dms = utils.arc_seconds_to_degrees(self.dec.arcseconds)
+        self.dec.degrees = utils.arc_seconds_to_degrees(self.dec.arcseconds)
 
         # The following only works for eq mounts
         if self.mount_config_data['type'] == "equatorial":
