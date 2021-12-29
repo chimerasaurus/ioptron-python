@@ -251,7 +251,7 @@ class ioptron:
         return self.scope.recv()
 
     # Get the direction we are pointed at
-    def get_pointing_direction(self):
+    def get_ra_and_dec(self):
         self.scope.send(':GEP#')
         returned_data = self.scope.recv()
 

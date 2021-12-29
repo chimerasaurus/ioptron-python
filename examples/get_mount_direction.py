@@ -5,7 +5,7 @@ scope = iopt.ioptron('COM5')
 print("Version #:  {}".format(scope.mount_version))
 
 # Get the mount's direction
-scope.get_pointing_direction()
+scope.get_ra_and_dec()
 
 print("RA - ARCs:  {}".format(scope.ra.arcseconds))
 print("RA - DMS:  {}".format(scope.ra.dms))
