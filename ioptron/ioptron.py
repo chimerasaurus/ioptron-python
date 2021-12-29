@@ -292,15 +292,16 @@ class ioptron:
         self.time.unix_offset = utils.offset_utc_time(self.time.unix_utc, self.time.utc_offset)
         self.time.formatted = utils.convert_unix_to_formatted(self.time.unix_offset)
 
-    # Go to zero position
     def go_to_zero_position(self):
+        """Go to the mount's zero position."""
         self.scope.send(':MH#')
         self.is_slewing = True
         # Get the response; do nothing with it
         self.scope.recv()
 
-    # Go to zero position
     def go_to_mechanical_zero_position(self):
+        """Search and go to the *mechanical* zero position.
+        Only supported by some mounts."""
         ## TODO: This is a good place to log a WARN
         # ['0040', '0041', '0043', '0044', '0070', '0071','0120', '0121', '0122']
         if self.mount_config_data['mechanical_zero'] is True:
@@ -310,8 +311,9 @@ class ioptron:
             self.scope.recv()
         # Maybe worth throwing an exception
 
-    # Park the moint (using pre-defined parking spot)
     def park(self):
+        """Park the mount at the most recently defined parking position.
+        Returns a true if successful or false if parking failed."""
         self.scope.send(':MP1#')
         response = self.scope.recv()
         if response == "1":
@@ -322,36 +324,33 @@ class ioptron:
             self.is_parked = False
         return self.is_parked
 
-    # Parse moving speed
     def parse_moving_speed(self, rate):
+        """Return the mount's current tracking speed in factors of sidarial rate."""
         return str(self.mount_config_data['tracking_speeds'][rate]) + 'x'
 
-    # Parse tracking rate
     def parse_tracking_rate(self, rate):
+        """Return the human readable tracking rate (i.e. 'siderial') of the mount."""
         return str(self.mount_config_data['tracking_rates'][rate])
 
-    # Reset all settings (time is unchanged)
-    # Must pass a TRUE to indicate you _really_ want to do this
     def reset_settings(self, confirm: bool):
+        """Reset all settings to default. Only applies if True is specified to indicate
+        the reset is really wanted. Does not reset any time-based information."""
         if confirm is True:
             self.scope.send(':RAS#')
             self.get_all_kinds_of_status()
             # TODO: Update other info once implemented
 
-    def send_str(self, string):
-        # Send a string
-        self.scope.send(string)
-        return self.scope.recv()
-
-    # Set a custom tracking rate
     def set_custom_tracking_rate(self, rate):
+        """Set a custom tracking rate to n.nnnn of the siderial rate. Only used
+        when 'custom' tracking rate is being used."""
         formatted_rate = (f"{float(rate):.6f}")
         send_command = ":RR" + formatted_rate + "#"
         self.scope.send(send_command)
-        response_data = self.scope.recv()
+        # Get the response; do nothing with it
+        self.scope.recv()
 
-    # Set daylight savings time (on = True, off = False)
     def set_daylight_savings(self, dst: bool):
+        """Enables daylight savings time when true, disables it when false."""
         if dst is True:
             self.scope.send(':SDS1#')
         else:
