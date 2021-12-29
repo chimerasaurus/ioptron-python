@@ -7,7 +7,7 @@ is broken out by the same *command groups* as in the spec doc.
 ## Get Information and Settings
 - [x] `:GLS#`
 - [x] `:GUT#` (12/27)
-- [ ] `:GEP#`
+- [x] `:GEP#` (12/28 - untested)
 - [ ] `:GAC#` 
 - [x] `:GTR#` (12/27 - untested)
 - [ ] `:GPC#`

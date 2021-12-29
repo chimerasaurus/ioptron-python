@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import time
 import yaml
 
-# A utility class to hold utility and common methods
+## A utility class to hold utility and common methods ##
 
 # Convert arc seconds with 0.01 percision to degrees
 def arc_seconds_to_degrees(seconds):

@@ -12,6 +12,12 @@ import time
 import ioptron.utils as utils
 
 # Data classes
+## DEC data
+@dataclass
+class DEC:
+    arcseconds: float = None
+    dms: float = None
+
 ## Firmwares
 @dataclass
 class Firmwares:
@@ -25,6 +31,12 @@ class Firmwares:
 class GpsState:
     available: bool = False
     locked: bool = False
+
+## RA data
+@dataclass
+class RA:
+    arcseconds: float = None
+    dms: float = None
 
 ## System status
 @dataclass
@@ -97,7 +109,6 @@ class ioptron:
         self.type = None
         self.position = None
         self.is_home = None
-        self.pier_side = None
         self.pec_recorded = False
         self.pec = None
         self.pps = False
@@ -106,6 +117,12 @@ class ioptron:
 
         # Time information
         self.time = TimeInfo()
+
+        # Direction information
+        self.ra = RA()
+        self.dec = DEC()
+        self.pier_side = None
+        self.counterweight_direction = None
 
     # Destructor that gets called when the object is destroyed
     def __del__(self):
@@ -232,6 +249,31 @@ class ioptron:
     def get_mount_version(self):
         self.scope.send(':MountInfo#')
         return self.scope.recv()
+
+    # Get the direction we are pointed at
+    def get_pointing_direction(self):
+        self.scope.send(':GEP#')
+        returned_data = self.scope.recv()
+
+        # RA
+        ra = returned_data[0:10]
+        self.ra.arcseconds = float(ra)
+        self.ra.dms = utils.arc_seconds_to_degrees(self.ra.arcseconds)
+
+        # DEC
+        dec = returned_data[10:19]
+        self.dec.arcseconds = float(dec)
+        self.dec.dms = utils.arc_seconds_to_degrees(self.dec.arcseconds)
+
+        # The following only works for eq mounts
+        if self.mount_config_data['type'] == "equatorial":
+            # Pier side
+            pier_side = returned_data[19:20]
+            self.pier_side = self.mount_config_data['pier_sides'][int(pier_side)]
+
+            # Counterweight direction
+            counterweight_direction = returned_data[20:21]
+            self.counterweight_direction = self.mount_config_data['counterweight_direction'][int(counterweight_direction)]
 
     # Get time-related information. This command returns a ton of data from the mount
     def get_time_information(self):

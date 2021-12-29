@@ -19,6 +19,13 @@
     2: solar
     3: king
     4: custom
+  pier_sides:
+    0: east
+    1: west
+    2: intermediate
+  counterweight_direction:
+    0: up
+    1: normal
   capabilities:
     encoders: False
     pec: True
