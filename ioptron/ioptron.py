@@ -58,7 +58,8 @@ class TimeInfo:
     utc_offset: int = None
     dst: bool = None
     jd: int = None
-    unix: float = None
+    unix_utc: float = None
+    unix_offset: float = None
     formatted: str = None
 
 ## Hemisphere
@@ -121,7 +122,6 @@ class ioptron:
     def get_all_kinds_of_status(self):
         self.scope.send(":GLS#")
         response_data = self.scope.recv()
-        print(response_data)
 
         # Parse latitude and longitude
         self.longitude = utils.arc_seconds_to_degrees(int(response_data[0:9]))
@@ -189,7 +189,6 @@ class ioptron:
 
         # Parse the time source
         time_source = response_data[21:22]
-        print(time_source)
         self.time_source.code = time_source
         if time_source == '1':
             self.time_source.description = "local port - RS232 or ethernet"
@@ -236,17 +235,24 @@ class ioptron:
 
     # Get time-related information. This command returns a ton of data from the mount
     def get_time_information(self):
-        response_data = self.scope.send(':GUT#')
+        self.scope.send(':GUT#')
+        response_data = self.scope.recv()
+        # Sometimes the response includes a leading 1; I assume it means update OK or new data?
+        if response_data[0] == '1':
+            self.scope.send(':GUT#')
+            response_data = self.scope.recv()
         self.time.utc_offset = int(response_data[0:4])
         self.time.dst = False if response_data[4:5] == '0' else True
-        self.time.jd = response_data[5:]
-        self.time.unix = utils.convert_j2k_to_unix(self.time.jd)
-        self.time.formatted = utils.convert_unix_to_formatted(self.time.unix)
+        self.time.jd = int(response_data[5:18].lstrip("0"))
+        self.time.unix_utc = utils.convert_j2k_to_unix_utc(self.time.jd, self.time.utc_offset)
+        self.time.unix_offset = utils.offset_utc_time(self.time.unix_utc, self.time.utc_offset)
+        self.time.formatted = utils.convert_unix_to_formatted(self.time.unix_offset)
 
     # Go to zero position
     def go_to_zero_position(self):
         self.scope.send(':MH#')
         self.is_slewing = True
+        response_data = self.scope.recv()
 
     # Go to zero position
     def go_to_mechanical_zero_position(self):
@@ -254,6 +260,7 @@ class ioptron:
         if self.mount_version in ['0040', '0041', '0043', '0044', '0070', '0071','0120', '0121', '0122']:
             self.scope.send(':MSH#')
             self.is_slewing = True
+            response_data = self.scope.recv()
         # Maybe worth throwing an exception
 
     # Park the moint (using pre-defined parking spot)
@@ -294,16 +301,18 @@ class ioptron:
         formatted_rate = (f"{float(rate):.6f}")
         send_command = ":RR" + formatted_rate + "#"
         self.scope.send(send_command)
+        response_data = self.scope.recv()
 
     # Set daylight savings time (on = True, off = False)
     def set_daylight_savings(self, dst: bool):
         if dst == True:
             self.scope.send(':SDS1#')
         else:
-            self.scope.send(':SDS#0')
+            self.scope.send(':SDS0#')
+        response_data = self.scope.recv()
         
         # Update time information after setting
-        self.get_time_information()
+        #self.get_time_information()
     
     # Set the current UTC time 
     def set_time(self):
@@ -312,10 +321,11 @@ class ioptron:
         self.scope.send(time_command)
     
     # Set the time zone offset from UTC
-    def set_timezone_offset(self, offset = utils.get_utc_offset_min):
-        offset.zfill(3)
-        tz_command = ":SGs" + offset + "#"
+    def set_timezone_offset(self, offset = utils.get_utc_offset_min()):
+        tz_offset = str(offset).zfill(3)
+        tz_command = ":SG" + tz_offset + "#" if offset < 0 else ":SG+" + tz_offset + "#"
         self.scope.send(tz_command)
+        response_data = self.scope.recv()
 
     # Toggle PEC - private method
     def _toggle_pec_recording(self, on: bool):

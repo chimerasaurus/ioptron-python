@@ -6,7 +6,7 @@ is broken out by the same *command groups* as in the spec doc.
 
 ## Get Information and Settings
 - [x] `:GLS#`
-- [x] `:GUT#` (12/27 - untested)
+- [x] `:GUT#` (12/27)
 - [ ] `:GEP#`
 - [ ] `:GAC#` 
 - [x] `:GTR#` (12/27 - untested)
@@ -28,7 +28,7 @@ is broken out by the same *command groups* as in the spec doc.
 - [ ] `:SRn#`
 - [ ] `:SGF0#`
 - [ ] `:SGF1#`
-- [x] `:SGsMMM#` (12/27 - untested)
+- [x] `:SGsMMM#` (12/27)
 - [x] `:SDS0#` (12/26)
 - [x] `:SDS1#` (12/26)
 - [x] `:SUTXXXXXXXXXXXXX#` (12/27 - untested)
