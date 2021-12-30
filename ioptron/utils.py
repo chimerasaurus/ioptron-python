@@ -62,11 +62,13 @@ def get_utc_time_in_j2k():
 
 def offset_utc_time(unix, offset):
     """Convert utc time into a time with the supplied timezone offset."""
-    offset_sec = timedelta(minutes=abs(offset)).seconds
-    if offset < 1:  
+    offset_sec = timedelta(minutes=abs(int(offset))).seconds
+    if offset < 1:
         return unix - offset_sec
-    else:
+    if offset > 0:
         return unix + offset_sec
+    if offset == 0:
+        return unix + 0 # No changes
 
 def parse_mount_config_file(file, model):
     """Parse the given YAML config and return the sub-branch with the given

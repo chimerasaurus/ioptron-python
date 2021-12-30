@@ -14,7 +14,8 @@ class Test_CoordinateFunctions(unittest.TestCase):
 
         # Run two tests
         with self.subTest():
-            self.assertEqual(utils.convert_arc_seconds_to_degrees(fourty_five_fourty_five_deg), 45.45)
+            self.assertEqual(utils.convert_arc_seconds_to_degrees( \
+                fourty_five_fourty_five_deg), 45.45)
         with self.subTest():
             self.assertEqual(utils.convert_arc_seconds_to_degrees(twenty_five_deg), 25)
 
@@ -30,7 +31,7 @@ class Test_CoordinateFunctions(unittest.TestCase):
         twelve_hours = 64800000
         twenty_four_hours = 129600000
         five_point_eight_three = 31526820
-        
+
         # Run a few tests
         with self.subTest():
             self.assertEqual(utils.convert_arc_seconds_to_hms(twelve_hours), (12, 0, 0))
@@ -40,17 +41,22 @@ class Test_CoordinateFunctions(unittest.TestCase):
             self.assertEqual(utils.convert_arc_seconds_to_hms(five_point_eight_three), (5, 50, 17))
 
     def test_offset_utc_time(self):
-        """Test the conversion of arc seconds with 0.01 precision - mid day
-        to HH:MM:SS."""
+        """Test offsetting the UTC time with a specified time zone offset in min."""
         offset_min_neg = -480
         offset_min_pos = 180
+        utc = 0
 
+        unix_time = time.time()
 
-        unix_time = time.now()
-        
         # Run a few tests
         with self.subTest():
-            self.assertEqual(utils.convert_arc_seconds_to_hms(twelve_hours), (12, 0, 0))
+            self.assertEqual(utils.offset_utc_time(unix_time, \
+                offset_min_neg), (unix_time + (offset_min_neg * 60)))
+        with self.subTest():
+            self.assertEqual(utils.offset_utc_time(unix_time, \
+                offset_min_pos), (unix_time + (offset_min_pos * 60)))
+        with self.subTest():
+            self.assertEqual(utils.offset_utc_time(unix_time, utc), (unix_time))
 
 if __name__ == '__main__':
     unittest.main()
