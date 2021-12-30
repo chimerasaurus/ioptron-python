@@ -14,9 +14,18 @@ def convert_arc_seconds_to_degrees(seconds):
     """Convert arc seconds with 0.01 percision to degrees"""
     return (seconds / 3600) * 0.01
 
+def convert_arc_seconds_to_dms(seconds):
+    """Convert arc seconds to degrees, minutes, seconds. Returns
+    a touple with the integer dms values."""
+    degrees = convert_arc_seconds_to_degrees(seconds)
+    d = int(degrees)
+    m = int((degrees - d) * 60)
+    s = int((degrees - d - m/60) * 3600)
+    return (d, m, s)
+
 def convert_arc_seconds_to_hms(seconds):
     """Converts arc seconds at 0.01 precision to arc HH:MM:SS"""
-    hours = seconds / (15.0 * 60.0 * 60.0 * 100.0) #Thank you INDI.
+    hours = float(seconds) / (15.0 * 60.0 * 60.0 * 100.0) #Thank you INDI.
     print(hours)
     minutes = (Decimal(hours) % 1) * 60
     print(minutes)

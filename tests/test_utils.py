@@ -17,6 +17,11 @@ class Test_CoordinateFunctions(unittest.TestCase):
         with self.subTest():
             self.assertEqual(utils.convert_arc_seconds_to_degrees(twenty_five_deg), 25)
 
+    def test_convert_arc_seconds_to_dms(self):
+        """Test the conversion of centi-arcseconds with to dms."""
+        eighty_five_ish = 30829224
+
+        self.assertEqual(utils.convert_arc_seconds_to_dms(eighty_five_ish), (85, 38, 12))
 
     def test_convert_arc_seconds_to_hms(self):
         """Test the conversion of arc seconds with 0.01 precision - mid day

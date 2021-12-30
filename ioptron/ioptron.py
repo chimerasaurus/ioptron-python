@@ -28,7 +28,9 @@ class Azimuth:
 @dataclass
 class DEC:
     arcseconds: float = None
-    degrees: float = None
+    degrees: int = None
+    minutes: int = None
+    seconds: int = None
 
 ## Firmwares
 @dataclass
@@ -48,6 +50,9 @@ class GpsState:
 @dataclass
 class RA:
     arcseconds: float = None
+    hours: int = None
+    minutes: int = None
+    seconds: int = None
     degrees: float = None
 
 ## System status
@@ -243,13 +248,13 @@ class ioptron:
         returned_data = self.scope.recv()
 
         # Alt
-        right_asc = returned_data[0:9]
-        self.ra.arcseconds = float(right_asc)
+        alt = returned_data[0:9]
+        self.ra.arcseconds = float(alt)
         self.ra.degrees = utils.convert_arc_seconds_to_degrees(self.ra.arcseconds)
 
         # Az
-        dec = returned_data[9:18]
-        self.dec.arcseconds = float(dec)
+        az = returned_data[9:18]
+        self.dec.arcseconds = float(az)
         self.dec.degrees = utils.convert_arc_seconds_to_degrees(self.dec.arcseconds)
 
     def get_custom_tracking_rate(self):
@@ -287,15 +292,21 @@ class ioptron:
         returned_data = self.scope.recv()
 
         # RA
-        ## TODO: We should report RA in HHMMSS
-        right_asc = returned_data[0:9]
+        right_asc = returned_data[9:18]
         self.ra.arcseconds = float(right_asc)
         self.ra.degrees = utils.convert_arc_seconds_to_degrees(self.ra.arcseconds)
+        hms = utils.convert_arc_seconds_to_hms(right_asc)
+        self.ra.hours = hms[0]
+        self.ra.minutes = hms[1]
+        self.ra.seconds = hms[2]
 
         # DEC
-        dec = returned_data[9:18]
+        dec = returned_data[0:9]
         self.dec.arcseconds = float(dec)
-        self.dec.degrees = utils.convert_arc_seconds_to_degrees(self.dec.arcseconds)
+        dms = utils.convert_arc_seconds_to_dms(self.dec.arcseconds)
+        self.dec.degrees = dms[0]
+        self.dec.minutes = dms[1]
+        self.dec.seconds = dms[2]
 
         # The following only works for eq mounts
         if self.mount_config_data['type'] == "equatorial":
