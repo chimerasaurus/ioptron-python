@@ -63,7 +63,7 @@ def get_utc_time_in_j2k():
 def offset_utc_time(unix, offset):
     """Convert utc time into a time with the supplied timezone offset."""
     offset_sec = timedelta(minutes=abs(offset)).seconds
-    if (offset < 1):  
+    if offset < 1:  
         return unix - offset_sec
     else:
         return unix + offset_sec

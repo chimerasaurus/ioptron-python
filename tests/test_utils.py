@@ -2,6 +2,7 @@
 
 # Imports
 import unittest
+import time
 from ioptron import utils
 
 class Test_CoordinateFunctions(unittest.TestCase):
@@ -28,14 +29,28 @@ class Test_CoordinateFunctions(unittest.TestCase):
         to HH:MM:SS."""
         twelve_hours = 64800000
         twenty_four_hours = 129600000
-
-        # Run two tests
+        five_point_eight_three = 31526820
+        
+        # Run a few tests
         with self.subTest():
             self.assertEqual(utils.convert_arc_seconds_to_hms(twelve_hours), (12, 0, 0))
         with self.subTest():
             self.assertEqual(utils.convert_arc_seconds_to_hms(twenty_four_hours), (24, 0, 0))
+        with self.subTest():
+            self.assertEqual(utils.convert_arc_seconds_to_hms(five_point_eight_three), (5, 50, 17))
 
-        #TODO: More tests to see if this actually works
+    def test_offset_utc_time(self):
+        """Test the conversion of arc seconds with 0.01 precision - mid day
+        to HH:MM:SS."""
+        offset_min_neg = -480
+        offset_min_pos = 180
+
+
+        unix_time = time.now()
+        
+        # Run a few tests
+        with self.subTest():
+            self.assertEqual(utils.convert_arc_seconds_to_hms(twelve_hours), (12, 0, 0))
 
 if __name__ == '__main__':
     unittest.main()
