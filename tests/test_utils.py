@@ -26,9 +26,9 @@ class Test_CoordinateFunctions(unittest.TestCase):
 
         # Run two tests
         with self.subTest():
-            self.assertEqual(utils.convert_arc_seconds_to_hms(twelve_hours), (12, 0, 0, 0.0))
+            self.assertEqual(utils.convert_arc_seconds_to_hms(twelve_hours), (12, 0, 0))
         with self.subTest():
-            self.assertEqual(utils.convert_arc_seconds_to_hms(twenty_four_hours), (24, 0, 0, 0.0))
+            self.assertEqual(utils.convert_arc_seconds_to_hms(twenty_four_hours), (24, 0, 0))
 
         #TODO: More tests to see if this actually works
 

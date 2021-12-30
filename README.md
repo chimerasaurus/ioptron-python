@@ -14,7 +14,10 @@ My goal in writing this is to eventually package it up and use it as a library f
 Some of this is written in a way that requires Python > 3.7. There are also Python requirements in the `requirements.txt` file.
 
 ## Running
-You will need to have your `PYTHONPATH` set up to run these right now, since it's not properly modularized.
+You will need to have your `PYTHONPATH` set up to run these right now, since it's not properly modularized. e.g.:
+
+                set PYTHONPATH=%PYTHONPATH%;x:\GitHub\ioptron-python
+                $Env:PYTHONPATH = "x:\GitHub\ioptron-python"
 
 ## Citations and sources
 

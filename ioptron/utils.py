@@ -16,11 +16,13 @@ def convert_arc_seconds_to_degrees(seconds):
 
 def convert_arc_seconds_to_hms(seconds):
     """Converts arc seconds at 0.01 precision to arc HH:MM:SS"""
-    hours = (((seconds*0.01)*(math.pi/648000))/(math.pi/12))
-    minutes = Decimal(hours) % 1
-    seconds = Decimal(minutes) % 1
-    milliseconds = Decimal(seconds) % 1
-    return (int(hours), int(minutes), int(seconds), round(float(milliseconds), 2))
+    hours = seconds / (15.0 * 60.0 * 60.0 * 100.0) #Thank you INDI.
+    print(hours)
+    minutes = (Decimal(hours) % 1) * 60
+    print(minutes)
+    seconds = (Decimal(minutes) % 1) * 60
+    print(seconds)
+    return (int(hours), int(minutes), int(seconds))
 
 def convert_j2k_to_unix_utc(sec, offset = 0):
     """Convert J2000 in 0.01 seconds to formatted UNIX in ms with offset if needed."""
