@@ -10,7 +10,6 @@ from serial.serialutil import SerialException
 from ioptron import iotty
 from ioptron import utils
 
-
 # Data classes
 ## Altitude data
 @dataclass
@@ -30,9 +29,9 @@ class Azimuth:
     minues: int = None
     seconds: int = None
 
-## DEC data
 @dataclass
 class DEC:
+    """Information about a declination value."""
     arcseconds: float = None
     degrees: int = None
     minutes: int = None
@@ -53,11 +52,13 @@ class GpsState:
     locked: bool = False
 
 @dataclass
-class GuidingRate:
+class Guiding:
     """Informationa bout the RA and dec guiding rate. Can be 0.01 - 0.99.
     Represents the rate * siderial rate."""
-    right_ascention: float = None
-    declination: float = None
+    right_ascention_rate: float = None
+    declination_rate: float = None
+    ra_filter_enabled: bool = None
+    has_ra_filter: bool = False
 
 ## RA data
 @dataclass
@@ -154,12 +155,10 @@ class ioptron:
         self.time_source = TimeSource()
         self.hemisphere = Hemisphere()
         self.moving_speed = MovingSpeed()
-        self.guiding_rate = GuidingRate()
+        self.guiding = Guiding()
         self.is_slewing = False
         self.altitude_limit = None
         self.is_tracking = False
-        self.type = None
-        self.position = None
         self.is_home = None
         self.pec = Pec()
         self.pps = False
@@ -314,8 +313,8 @@ class ioptron:
         self.scope.send(':AG#')
         returned_data = self.scope.recv()
         # Convert values to 0.01 - 0.9
-        self.guiding_rate.right_ascention = float(returned_data[0:2]) * 0.01
-        self.guiding_rate.declination = float(returned_data[2:4])*  0.01
+        self.guiding.right_ascention_rate = float(returned_data[0:2]) * 0.01
+        self.guiding.declination_rate = float(returned_data[2:4])*  0.01
 
     def get_pec_integrity(self):
         """Get the integrity of the PEC. Returns (and sets) if it is complete or incomplete.
@@ -335,7 +334,7 @@ class ioptron:
         """Get the status of the PEC recording. Returns (and sets) if it is stopped or recording.
         Only available with eq mounts without encoders"""
         if self.mount_config_data['type'] != "equatorial" or \
-            self.mount_config_data['capabilities']['encoders'] == True:
+            self.mount_config_data['capabilities']['encoders'] is True:
             return
         # Continue - is an EQ mount without encoders
         self.scope.send(':GPR#')
@@ -445,6 +444,21 @@ class ioptron:
             counterweight_direction = returned_data[19:20]
             self.counterweight_direction = \
                 self.mount_config_data['counterweight_direction'][int(counterweight_direction)]
+
+    def get_ra_guiding_filter_status(self):
+        """Get the status of the RA guiding filter for mounts with encoders."""
+        # Only available for eq mounts with encoders
+        if self.mount_config_data['type'] != "equatorial" or \
+            self.mount_config_data['capabilities']['encoders'] is False:
+            return None
+        self.guiding.has_ra_filter = True
+        self.scope.send(':GGF#')
+        returned_data = self.scope.recv()
+        if returned_data == "0":
+            self.guiding.ra_filter_enabled = False
+        if returned_data == "1":
+            self.guiding.ra_filter_enabled = True
+        return self.guiding.ra_filter_enabled
 
     def get_time_information(self):
         """Get all time information from the mount, including it's time,
