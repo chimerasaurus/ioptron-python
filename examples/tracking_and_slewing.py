@@ -23,3 +23,9 @@ scope.get_meredian_treatment()
 print("MEREDIAN: code:: {}".format(scope.meredian.code))
 print("MEREDIAN: description:: {}".format(scope.meredian.description))
 print("MEREDIAN: degree limit:: {}".format(scope.meredian.degree_limit))
+
+# PEC tests
+scope.get_pec_integrity()
+print("PEC: integrity:: {}".format(scope.pec.integrity_complete))
+scope.get_pec_recording_status()
+print("PEC: recording:: {}".format(scope.pec.recording))

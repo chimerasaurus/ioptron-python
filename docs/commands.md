@@ -16,8 +16,8 @@ is broken out by the same *command groups* as in the spec doc.
 - [x] `:AG#` (12/30)
 - [x] `:GMT#` (12/30)
 - [ ] `:GGF#`
-- [ ] `:GPE#`
-- [ ] `:GPR#`
+- [x] `:GPE#` (12/30)
+- [x] `:GPR#` (12/30)
 
 ## Change Settings
 - [ ] `:RT0#`

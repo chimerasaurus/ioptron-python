@@ -102,9 +102,16 @@ class Parking:
     altitude: Altitude = Altitude()
     azimuth: Azimuth = Azimuth()
 
-## Time source
+@dataclass
+class Pec:
+    """Holds information related to the periodic error correction (PEC.)"""
+    integrity_complete: bool = None
+    enabled: bool = None
+    recording: bool = None
+
 @dataclass
 class TimeSource:
+    """Keeps track of the source of time. May be removed in the future."""
     code: int = None
     description: str = "unset"
 
@@ -154,8 +161,7 @@ class ioptron:
         self.type = None
         self.position = None
         self.is_home = None
-        self.pec_recorded = False
-        self.pec = None
+        self.pec = Pec()
         self.pps = False
         self.mount_config_data = \
             utils.parse_mount_config_file('ioptron/mount_values.yaml', self.mount_version)
@@ -219,7 +225,7 @@ class ioptron:
             self.system_status.description = "tracking with periodic error correction disabled"
             self.is_slewing = False
             self.is_tracking = True
-            self.pec = False
+            self.pec.enabled = False
         elif status_code == '2':
             self.system_status.description = "slewing"
             self.is_slewing = True
@@ -235,7 +241,7 @@ class ioptron:
             self.system_status.description = "tracking with periodic error correction enabled"
             self.is_slewing = False
             self.is_tracking = True
-            self.pec = True
+            self.pec.enabled = True
         elif status_code == '6':
             self.system_status.description = "parked"
             self.is_slewing = False
@@ -310,6 +316,34 @@ class ioptron:
         # Convert values to 0.01 - 0.9
         self.guiding_rate.right_ascention = float(returned_data[0:2]) * 0.01
         self.guiding_rate.declination = float(returned_data[2:4])*  0.01
+
+    def get_pec_integrity(self):
+        """Get the integrity of the PEC. Returns (and sets) if it is complete or incomplete.
+        Only available with eq mounts without encoders"""
+        if self.mount_config_data['type'] != "equatorial" or \
+            self.mount_config_data['capabilities']['encoders'] == True:
+            return
+        # Continue - is an EQ mount without encoders
+        self.scope.send(':GPE#')
+        returned_data = self.scope.recv()
+        if returned_data == "0":
+            self.pec.integrity_complete = False
+        if returned_data == "1":
+            self.pec.integrity_complete = True
+
+    def get_pec_recording_status(self):
+        """Get the status of the PEC recording. Returns (and sets) if it is stopped or recording.
+        Only available with eq mounts without encoders"""
+        if self.mount_config_data['type'] != "equatorial" or \
+            self.mount_config_data['capabilities']['encoders'] == True:
+            return
+        # Continue - is an EQ mount without encoders
+        self.scope.send(':GPR#')
+        returned_data = self.scope.recv()
+        if returned_data == "0":
+            self.pec.recording = False
+        if returned_data == "1":
+            self.pec.recording = True
 
     def get_max_slewing_speed(self):
         """Get the maximum slewing speed for this mount and returns a factor of siderial (eg 8x)."""
