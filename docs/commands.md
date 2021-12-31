@@ -5,16 +5,16 @@ to help keep track of what has and has not yet been implemented. This document
 is broken out by the same *command groups* as in the spec doc.
 
 ## Get Information and Settings
-- [x] `:GLS#`
+- [x] `:GLS#` (12/26)
 - [x] `:GUT#` (12/27)
-- [x] `:GEP#` (12/28 - untested)
-- [x] `:GAC#` (12/30 - untested)
-- [x] `:GTR#` (12/27 - untested)
-- [x] `:GPC#` (12/30 - untested)
-- [x] `:GSR#` (12/30 - untested)
-- [x] `:GAL#` (12/30 - untested)
-- [x] `:AG#` (12/30 - untested)
-- [ ] `:GMT#`
+- [x] `:GEP#` (12/28)
+- [x] `:GAC#` (12/30)
+- [x] `:GTR#` (12/27)
+- [x] `:GPC#` (12/30)
+- [x] `:GSR#` (12/30)
+- [x] `:GAL#` (12/30)
+- [x] `:AG#` (12/30)
+- [x] `:GMT#` (12/30)
 - [ ] `:GGF#`
 - [ ] `:GPE#`
 - [ ] `:GPR#`
@@ -31,7 +31,7 @@ is broken out by the same *command groups* as in the spec doc.
 - [x] `:SGsMMM#` (12/27)
 - [x] `:SDS0#` (12/26)
 - [x] `:SDS1#` (12/26)
-- [x] `:SUTXXXXXXXXXXXXX#` (12/27 - untested)
+- [x] `:SUTXXXXXXXXXXXXX#` (12/27)
 - [ ] `:SLOsTTTTTTTT#`
 - [ ] `:SLAsTTTTTTTT#`
 - [ ] `:SHE0#`

@@ -81,6 +81,13 @@ class TrackingRate:
     description: str = "off"
     custom: float = 1.0000
 
+@dataclass
+class Meredian:
+    """Holds meredian-related information."""
+    code: int = None
+    description: str = None
+    degree_limit: int = None
+
 ## Moving speed
 @dataclass
 class MovingSpeed:
@@ -152,7 +159,6 @@ class ioptron:
         self.pps = False
         self.mount_config_data = \
             utils.parse_mount_config_file('ioptron/mount_values.yaml', self.mount_version)
-        self.last_update = time.time()
 
         # Time information
         self.time = TimeInfo()
@@ -164,9 +170,13 @@ class ioptron:
         self.counterweight_direction = None
         self.altitude = Altitude()
         self.azimuth = Azimuth()
+        self.meredian = Meredian()
 
         # Parking
         self.parking = Parking()
+
+        # Apply the latest update time
+        self.last_update = time.time()
 
     # Destructor that gets called when the object is destroyed
     def __del__(self):
@@ -291,14 +301,15 @@ class ioptron:
         self.scope.send(':GTR#')
         returned_data = self.scope.recv()
         # Set the value and strip the control '#' at the end (response is d{5})
-        self.tracking_rate.custom = bool(returned_data[:5])
+        self.tracking_rate.custom = format((float(returned_data[:5]) * 0.0001), '.4f')
 
     def get_guiding_rate(self):
         """Get the current RA and DEC guiding rates. They are 0.1 - 0.99 * siderial."""
         self.scope.send(':AG#')
         returned_data = self.scope.recv()
-        self.guiding_rate.right_ascention = float(returned_data[0:2])
-        self.guiding_rate.declination = float(returned_data[2:4])
+        # Convert values to 0.01 - 0.9
+        self.guiding_rate.right_ascention = float(returned_data[0:2]) * 0.01
+        self.guiding_rate.declination = float(returned_data[2:4])*  0.01
 
     def get_max_slewing_speed(self):
         """Get the maximum slewing speed for this mount and returns a factor of siderial (eg 8x)."""
@@ -307,11 +318,29 @@ class ioptron:
 
         # Response depends on mount model
         if returned_data == "7#":
-            return "256x"
+            return 256
         if returned_data == "8#":
-            return "512x"
-        if returned_data == "9x":
-            return self.mount_config_data['tracking_speeds']['9']
+            return 512
+        if returned_data == "9#":
+            return self.mount_config_data['tracking_speeds'][9]
+
+    def get_meredian_treatment(self):
+        """Get the treatment of the meredian - stop below limit or flip at limit along
+        with the position limit in degrees past meredian. Only used for equitorial mounts."""
+        # This works for eq mounts only
+        if self.mount_config_data['type'] != 'equatorial':
+            return
+        # This is an eq mount
+        self.scope.send(':GMT#')
+        returned_data = self.scope.recv()
+        code = returned_data[0:1]
+        degrees = returned_data[1:3]
+        self.meredian.code = int(code)
+        if self.meredian.code == 0:
+            self.meredian.description = "Stop at meredian"
+        if self.meredian.code == 1:
+            self.meredian.description = "Flip at meredian with custom limit"
+        self.meredian.degree_limit = int(degrees)
 
     def get_main_firmwares(self):
         """Get the firmware(s) of the mount and hand controller, if it is attached, otherwise
@@ -460,9 +489,9 @@ class ioptron:
         """PRIVATE: Set DMS for a given dataclass like Altitude and Azimuth given
         their pre-set arcseconds value. Intended to keep code DRY."""
         dms = utils.convert_arc_seconds_to_dms(data_class.arcseconds)
-        data_class.altitude.degrees = dms[0]
-        data_class.altitude.minues = dms[1]
-        data_class.altitude.seconds = dms[2]
+        data_class.degrees = dms[0]
+        data_class.minues = dms[1]
+        data_class.seconds = dms[2]
 
     def set_daylight_savings(self, dst: bool):
         """Enables daylight savings time when true, disables it when false."""

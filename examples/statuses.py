@@ -2,6 +2,7 @@ import ioptron as iom
 import ioptron.ioptron as iopt 
 
 scope = iopt.ioptron('COM5')
+print(">> Starting test of :GLS# >>")
 scope.get_all_kinds_of_status()
 
 # Lat and long
@@ -36,3 +37,5 @@ print("Time source - description:  {}".format(scope.time_source.description))
 # Hemisphere
 print("Hemisphere - code:  {}".format(scope.hemisphere.code))
 print("Hemisphere - location:  {}".format(scope.hemisphere.location))
+
+print("<< Done with :GLS# <<")
