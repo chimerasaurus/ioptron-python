@@ -34,8 +34,8 @@ is broken out by the same *command groups* as in the spec doc.
 - [x] `:SUTXXXXXXXXXXXXX#` (12/27)
 - [ ] `:SLOsTTTTTTTT#`
 - [ ] `:SLAsTTTTTTTT#`
-- [ ] `:SHE0#`
-- [ ] `:SHE1#`
+- [x] `:SHE0#` (12/31 - untested)
+- [x] `:SHE1#` (12/31 - untested)
 - [ ] `:MSRn#`
 - [ ] `:SALsnn#`
 - [ ] `:RGnnnn#`

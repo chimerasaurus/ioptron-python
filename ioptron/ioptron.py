@@ -45,11 +45,13 @@ class Firmwares:
     ra: str = None
     dec: str = None
 
-## GPS state
 @dataclass
-class GpsState:
-    available: bool = False
-    locked: bool = False
+class Location:
+    """Holds location information along with GPS data."""
+    gps_available: bool = False
+    gps_locked: bool = False
+    longitude: float = None
+    latitude: float = None
 
 @dataclass
 class Guiding:
@@ -141,14 +143,12 @@ class ioptron:
             raise SerialException
 
         # Assign default values
-        self.longitude = None
-        self.latitude = None
+        self.location = Location()
         main_fw_info = self.get_main_firmwares()
         motor_fw_info = self.get_motor_firmwares()
         self.mount_version = self.get_mount_version()
         self.firmware = Firmwares(mainboard=main_fw_info[0], hand_controller=main_fw_info[1], \
             ra=motor_fw_info[0], dec=motor_fw_info[1])
-        self.gps = GpsState()
         self.hand_controller_attached = False if 'xx' in self.firmware.hand_controller else True
         self.system_status = SystemStatus()
         self.tracking_rate = TrackingRate()
@@ -197,20 +197,20 @@ class ioptron:
         response_data = self.scope.recv()
 
         # Parse latitude and longitude
-        self.longitude = utils.convert_arc_seconds_to_degrees(int(response_data[0:9]))
-        self.latitude = utils.convert_arc_seconds_to_degrees(\
+        self.location.longitude = utils.convert_arc_seconds_to_degrees(int(response_data[0:9]))
+        self.location.latitude = utils.convert_arc_seconds_to_degrees(\
             int(response_data[9:17])) - 90 # Val is +90
 
         # Parse GPS state
         gps_state = response_data[17:18]
         if gps_state == '0':
-            self.gps.available = False
+            self.location.gps_available = False
         elif gps_state == '1':
-            self.gps.available = True
-            self.gps.locked = False
+            self.location.gps_available = True
+            self.location.gps_locked = False
         elif gps_state == '2':
-            self.gps.available = True
-            self.gps.locked = True
+            self.location.gps_available = True
+            self.location.gps_locked = True
 
         # Parse the system status
         # TODO: Refactor using YAML config
@@ -551,7 +551,17 @@ class ioptron:
         self.scope.recv()
 
         # Update time information after setting
-        #self.get_time_information()
+        self.get_time_information()
+
+    def set_hemisphere(self, direction: str):
+        """Set the mount's hemisphere. Supplied argument must be 'north', 'south', or
+        'n' or 's'. Returns True after command is sent."""
+        assert direction.lower() in ['north', 'south', 'n', 's']
+        hemisphere = 0 if direction[0:1] is 's' else 1
+        command = ":SHE" + hemisphere + "#"
+        self.scope.send(command)
+        self.scope.recv()
+        return True
 
     def set_time(self):
         """Set the current time on the moint to the current computer's time. Sets to UTC."""
