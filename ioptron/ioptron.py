@@ -15,14 +15,20 @@ from ioptron import utils
 ## Altitude data
 @dataclass
 class Altitude:
+    """An altitude position. Contains the arcseconds and DMS."""
     arcseconds: float = None
     degrees: float = None
+    minues: int = None
+    seconds: int = None
 
 ## Azimuth data
 @dataclass
 class Azimuth:
+    """An azimuth position. Contains the arcseconds and DMS."""
     arcseconds: float = None
     degrees: float = None
+    minues: int = None
+    seconds: int = None
 
 ## DEC data
 @dataclass
@@ -32,9 +38,9 @@ class DEC:
     minutes: int = None
     seconds: int = None
 
-## Firmwares
 @dataclass
 class Firmwares:
+    """Information on the firmware istalled on the mount and components."""
     mainboard: str = None
     hand_controller: str = None
     ra: str = None
@@ -74,6 +80,13 @@ class MovingSpeed:
     code: int = None
     multiplier: int = None
     description: str = None
+
+@dataclass
+class Parking:
+    """Contains information and location of parking."""
+    is_parked: bool = None
+    altitude: Altitude = Altitude()
+    azimuth: Azimuth = Azimuth()
 
 ## Time source
 @dataclass
@@ -121,7 +134,7 @@ class ioptron:
         self.moving_speed = MovingSpeed()
         self.is_slewing = False
         self.is_tracking = False
-        self.is_parked = None
+        self.parking = Parking()
         self.mount_version = self.get_mount_version()
         self.type = None
         self.position = None
@@ -137,11 +150,11 @@ class ioptron:
         self.time = TimeInfo()
 
         # Direction information
-        self.ra = RA()
-        self.dec = DEC()
+        self.right_ascension = RA()
+        self.declination = DEC()
         self.pier_side = None
         self.counterweight_direction = None
-        self.altitude - Altitude()
+        self.altitude = Altitude()
         self.azimuth = Azimuth()
 
     # Destructor that gets called when the object is destroyed
@@ -152,9 +165,6 @@ class ioptron:
         except:
             print("CLEANUP: not needed or was unclean")
 
-    # Get the current azimuth
-    #def get_azimuth(self):
-
     # To get the joke here, read the official protocol docs
     def get_all_kinds_of_status(self):
         self.scope.send(":GLS#")
@@ -162,7 +172,8 @@ class ioptron:
 
         # Parse latitude and longitude
         self.longitude = utils.convert_arc_seconds_to_degrees(int(response_data[0:9]))
-        self.latitude = utils.convert_arc_seconds_to_degrees(int(response_data[9:17])) - 90 # Val is +90
+        self.latitude = utils.convert_arc_seconds_to_degrees(\
+            int(response_data[9:17])) - 90 # Val is +90
 
         # Parse GPS state
         gps_state = response_data[17:18]
@@ -208,7 +219,7 @@ class ioptron:
             self.system_status.description = "parked"
             self.is_slewing = False
             self.is_tracking = False
-            self.is_parked = True
+            self.parking.is_parked = True
         elif status_code == '7':
             self.system_status.description = "stopped at zero position (home position)"
             self.is_slewing = False
@@ -247,15 +258,15 @@ class ioptron:
         self.scope.send(':GAC#')
         returned_data = self.scope.recv()
 
-        # Alt
-        alt = returned_data[0:9]
-        self.ra.arcseconds = float(alt)
-        self.ra.degrees = utils.convert_arc_seconds_to_degrees(self.ra.arcseconds)
+        # Altitude
+        altitude = returned_data[0:9]
+        self.altitude.arcseconds = float(altitude)
+        self._set_dataclass_dms_from_arcseconds(self.altitude)
 
-        # Az
-        az = returned_data[9:18]
-        self.dec.arcseconds = float(az)
-        self.dec.degrees = utils.convert_arc_seconds_to_degrees(self.dec.arcseconds)
+        # Azimuth
+        azimuth = returned_data[9:18]
+        self.azimuth.arcseconds = float(azimuth)
+        self._set_dataclass_dms_from_arcseconds(self.azimuth)
 
     def get_custom_tracking_rate(self):
         """Get the custom tracking rate, if it is set. Otherwise will be 1.000."""
@@ -263,6 +274,19 @@ class ioptron:
         returned_data = self.scope.recv()
         # Set the value and strip the control '#' at the end (response is d{5})
         self.tracking_rate.custom = bool(returned_data[:5])
+
+    def get_max_slewing_speed(self):
+        """Get the maximum slewing speed for this mount and returns a factor of siderial (eg 8x)."""
+        self.scope.send(':GSR#')
+        returned_data = self.scope.recv()
+
+        # Response depends on mount model
+        if returned_data == "7#":
+            return "256x"
+        if returned_data == "8#":
+            return "512x"
+        if returned_data == "9x":
+            return self.mount_config_data['tracking_speeds']['9']
 
     def get_main_firmwares(self):
         """Get the firmware(s) of the mount and hand controller, if it is attached, otherwise
@@ -286,6 +310,21 @@ class ioptron:
         self.scope.send(':MountInfo#')
         return self.scope.recv()
 
+    def get_parking_position(self):
+        """Get the current parking position of the mount. """
+        self.scope.send(':GPC#')
+        returned_data = self.scope.recv()
+
+        # Altitude
+        altitude = returned_data[0:8]
+        self.parking.altitude.arcseconds = float(altitude)
+        self._set_dataclass_dms_from_arcseconds(self.parking.altitude)
+
+        # Azimuth
+        azimuth = returned_data[8:17]
+        self.parking.azimuth.arcseconds = float(azimuth)
+        self._set_dataclass_dms_from_arcseconds(self.parking.azimuth)
+
     def get_ra_and_dec(self):
         """Get the RA and DEC of the telescope's current pointing position."""
         self.scope.send(':GEP#')
@@ -293,20 +332,20 @@ class ioptron:
 
         # RA
         right_asc = returned_data[9:18]
-        self.ra.arcseconds = float(right_asc)
-        self.ra.degrees = utils.convert_arc_seconds_to_degrees(self.ra.arcseconds)
+        self.right_ascension.arcseconds = float(right_asc)
+        self.right_ascension.degrees = utils.convert_arc_seconds_to_degrees(self.right_ascension.arcseconds)
         hms = utils.convert_arc_seconds_to_hms(right_asc)
-        self.ra.hours = hms[0]
-        self.ra.minutes = hms[1]
-        self.ra.seconds = hms[2]
+        self.right_ascension.hours = hms[0]
+        self.right_ascension.minutes = hms[1]
+        self.right_ascension.seconds = hms[2]
 
-        # DEC
-        dec = returned_data[0:9]
-        self.dec.arcseconds = float(dec)
-        dms = utils.convert_arc_seconds_to_dms(self.dec.arcseconds)
-        self.dec.degrees = dms[0]
-        self.dec.minutes = dms[1]
-        self.dec.seconds = dms[2]
+        # Declination
+        declination = returned_data[0:9]
+        self.declination.arcseconds = float(declination)
+        dms = utils.convert_arc_seconds_to_dms(self.declination.arcseconds)
+        self.declination.degrees = dms[0]
+        self.declination.minutes = dms[1]
+        self.declination.seconds = dms[2]
 
         # The following only works for eq mounts
         if self.mount_config_data['type'] == "equatorial":
@@ -361,11 +400,11 @@ class ioptron:
         response = self.scope.recv()
         if response == "1":
             # Mount parked OK
-            self.is_parked = True
+            self.parking.is_parked = True
         else:
             # Mount was mot parked OK
-            self.is_parked = False
-        return self.is_parked
+            self.parking.is_parked = False
+        return self.parking.is_parked
 
     def parse_moving_speed(self, rate):
         """Return the mount's current tracking speed in factors of sidarial rate."""
@@ -391,6 +430,14 @@ class ioptron:
         self.scope.send(send_command)
         # Get the response; do nothing with it
         self.scope.recv()
+
+    def _set_dataclass_dms_from_arcseconds(self, data_class):
+        """PRIVATE: Set DMS for a given dataclass like Altitude and Azimuth given
+        their pre-set arcseconds value. Intended to keep code DRY."""
+        dms = utils.convert_arc_seconds_to_dms(data_class.arcseconds)
+        data_class.altitude.degrees = dms[0]
+        data_class.altitude.minues = dms[1]
+        data_class.altitude.seconds = dms[2]
 
     def set_daylight_savings(self, dst: bool):
         """Enables daylight savings time when true, disables it when false."""
@@ -460,8 +507,8 @@ class ioptron:
         """Unpark the moint. If the mount is unparked already, this does nothing. """
         self.scope.send(':MP0#')
         # Always returns a 1
-        self.is_parked = False
-        return self.is_parked
+        self.parking.is_parked = False
+        return self.parking.is_parked
 
     def update_status(self):
         """Call all of the (4) update commands to get the latest status of the mount."""

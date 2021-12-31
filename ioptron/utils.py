@@ -6,7 +6,6 @@ This is a utility module to do common methods, conversions, etc.
 # Imports
 from datetime import datetime, timedelta
 from decimal import Decimal
-import math
 import time
 import yaml
 
@@ -18,19 +17,16 @@ def convert_arc_seconds_to_dms(seconds):
     """Convert arc seconds to degrees, minutes, seconds. Returns
     a touple with the integer dms values."""
     degrees = convert_arc_seconds_to_degrees(seconds)
-    d = int(degrees)
-    m = int((degrees - d) * 60)
-    s = int((degrees - d - m/60) * 3600)
-    return (d, m, s)
+    degree = int(degrees)
+    minute = int((degrees - degree) * 60)
+    second = int((degrees - degree - minute/60) * 3600)
+    return (degree, abs(minute), abs(second))
 
 def convert_arc_seconds_to_hms(seconds):
     """Converts arc seconds at 0.01 precision to arc HH:MM:SS"""
     hours = float(seconds) / (15.0 * 60.0 * 60.0 * 100.0) #Thank you INDI.
-    print(hours)
     minutes = (Decimal(hours) % 1) * 60
-    print(minutes)
     seconds = (Decimal(minutes) % 1) * 60
-    print(seconds)
     return (int(hours), int(minutes), int(seconds))
 
 def convert_j2k_to_unix_utc(sec, offset = 0):

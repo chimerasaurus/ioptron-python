@@ -1,4 +1,7 @@
-"""A set of tests to test the utils module."""
+"""
+A set of tests to test the utils module.
+@author - James Malone
+"""
 
 # Imports
 import unittest
@@ -22,8 +25,14 @@ class Test_CoordinateFunctions(unittest.TestCase):
     def test_convert_arc_seconds_to_dms(self):
         """Test the conversion of centi-arcseconds with to dms."""
         eighty_five_ish = 30829224
+        negative_eighty_five_ish = eighty_five_ish * -1
 
-        self.assertEqual(utils.convert_arc_seconds_to_dms(eighty_five_ish), (85, 38, 12))
+        # Run a few tests
+        with self.subTest():
+            self.assertEqual(utils.convert_arc_seconds_to_dms(eighty_five_ish), (85, 38, 12))
+        with self.subTest():
+            self.assertEqual(utils.convert_arc_seconds_to_dms(negative_eighty_five_ish), \
+                (-85, 38, 12))
 
     def test_convert_arc_seconds_to_hms(self):
         """Test the conversion of arc seconds with 0.01 precision - mid day
@@ -39,6 +48,13 @@ class Test_CoordinateFunctions(unittest.TestCase):
             self.assertEqual(utils.convert_arc_seconds_to_hms(twenty_four_hours), (24, 0, 0))
         with self.subTest():
             self.assertEqual(utils.convert_arc_seconds_to_hms(five_point_eight_three), (5, 50, 17))
+
+    def test_get_utc_time_in_j2k(self):
+        """Test getting the UTC time in j2k. This only tests for a reasonable return."""
+        j2k_time = utils.get_utc_time_in_j2k()
+        utc = time.time()
+        # j2k time is returned at 1000x
+        self.assertGreater(utc, (j2k_time / 1000))
 
     def test_offset_utc_time(self):
         """Test offsetting the UTC time with a specified time zone offset in min."""
