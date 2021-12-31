@@ -26,8 +26,8 @@ is broken out by the same *command groups* as in the spec doc.
 - [x] `:RT3#` (12/30 - untested)
 - [x] `:RT4#` (12/30 - untested)
 - [x] `:SRn#` (12/30 - untested)
-- [ ] `:SGF0#`
-- [ ] `:SGF1#`
+- [x] `:SGF0#` (12/30 - untested)
+- [x] `:SGF1#` (12/30 - untested)
 - [x] `:SGsMMM#` (12/27)
 - [x] `:SDS0#` (12/26)
 - [x] `:SDS1#` (12/26)

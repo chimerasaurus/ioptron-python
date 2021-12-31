@@ -543,6 +543,24 @@ class ioptron:
         self.scope.recv()
         return True
 
+    def set_ra_guiding_filter_status(self, enabled: bool):
+        """Set the status of the RA guiding filter for eq mounts with encoders.
+        This command may or may not be saved on mount restart - the docs are unclear.
+        Returns True after the command is sent."""
+        # Only available for eq mounts with encoders
+        if self.mount_config_data['type'] != "equatorial" or \
+            self.mount_config_data['capabilities']['encoders'] is False:
+            return None
+        if enabled is True:
+            self.guiding.ra_filter_enabled = True
+            self.scope.send(":SGF1#")
+        if enabled is False:
+            self.guiding.ra_filter_enabled = False
+            self.scope.send(":SGF0#")
+        # Get the response; do nothing with it
+        self.scope.recv()
+        return True
+
     def set_custom_tracking_rate(self, rate):
         """Set a custom tracking rate to n.nnnn of the siderial rate. Only used
         when 'custom' tracking rate is being used. Returns True after command
