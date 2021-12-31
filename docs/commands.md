@@ -20,12 +20,12 @@ is broken out by the same *command groups* as in the spec doc.
 - [x] `:GPR#` (12/30)
 
 ## Change Settings
-- [ ] `:RT0#`
-- [ ] `:RT1#`
-- [ ] `:RT2#`
-- [ ] `:RT3#`
-- [ ] `:RT4#`
-- [ ] `:SRn#`
+- [x] `:RT0#` (12/30 - untested)
+- [x] `:RT1#` (12/30 - untested)
+- [x] `:RT2#` (12/30 - untested)
+- [x] `:RT3#` (12/30 - untested)
+- [x] `:RT4#` (12/30 - untested)
+- [x] `:SRn#` (12/30 - untested)
 - [ ] `:SGF0#`
 - [ ] `:SGF1#`
 - [x] `:SGsMMM#` (12/27)

@@ -77,12 +77,20 @@ class SystemStatus:
     code: int = None
     description: str = None
 
-## Tracking rate
 @dataclass
-class TrackingRate:
+class Tracking:
+    """Holds tracking and rate information for the mount."""
     code: int = None
-    description: str = "off"
     custom: float = 1.0000
+    available_rates: dict = None
+    is_tracking: bool = False
+
+    def current_rate(self):
+        """Return a string description of the current rate."""
+        if self.code is not None:
+            return self.available_rates[self.code]
+        # Not set, return none
+        return None
 
 @dataclass
 class Meredian:
@@ -91,12 +99,14 @@ class Meredian:
     description: str = None
     degree_limit: int = None
 
-## Moving speed
 @dataclass
 class MovingSpeed:
+    """Information about the moving speed of the mount."""
     code: int = None
     multiplier: int = None
     description: str = None
+    button_rate: int = None
+    available_rates: dict = None
 
 @dataclass
 class Parking:
@@ -151,14 +161,13 @@ class ioptron:
             ra=motor_fw_info[0], dec=motor_fw_info[1])
         self.hand_controller_attached = False if 'xx' in self.firmware.hand_controller else True
         self.system_status = SystemStatus()
-        self.tracking_rate = TrackingRate()
+        self.tracking = Tracking()
         self.time_source = TimeSource()
         self.hemisphere = Hemisphere()
         self.moving_speed = MovingSpeed()
         self.guiding = Guiding()
         self.is_slewing = False
         self.altitude_limit = None
-        self.is_tracking = False
         self.is_home = None
         self.pec = Pec()
         self.pps = False
@@ -219,46 +228,47 @@ class ioptron:
         if status_code == '0':
             self.system_status.description = "stopped at non-zero position"
             self.is_slewing = False
-            self.is_tracking = False
+            self.tracking.is_tracking = False
         elif status_code == '1':
             self.system_status.description = "tracking with periodic error correction disabled"
             self.is_slewing = False
-            self.is_tracking = True
+            self.tracking.is_tracking = True
             self.pec.enabled = False
         elif status_code == '2':
             self.system_status.description = "slewing"
             self.is_slewing = True
-            self.is_tracking = False
+            self.tracking.is_tracking = False
         elif status_code == '3':
             self.system_status.description = "auto-guiding"
             self.is_slewing = False
-            self.is_tracking = True
+            self.tracking.is_tracking = True
         elif status_code == '4':
             self.system_status.description = "meridian flipping"
             self.is_slewing = True
         elif status_code == '5':
             self.system_status.description = "tracking with periodic error correction enabled"
             self.is_slewing = False
-            self.is_tracking = True
+            self.tracking.is_tracking = True
             self.pec.enabled = True
         elif status_code == '6':
             self.system_status.description = "parked"
             self.is_slewing = False
-            self.is_tracking = False
+            self.tracking.is_tracking = False
             self.parking.is_parked = True
         elif status_code == '7':
             self.system_status.description = "stopped at zero position (home position)"
             self.is_slewing = False
-            self.is_tracking = False
+            self.tracking.is_tracking = False
 
         # Parse tracking rate
         tracking_rate = response_data[19:20]
-        self.tracking_rate.code = status_code
-        self.tracking_rate.description = self.parse_tracking_rate(tracking_rate)
+        self.tracking.code = tracking_rate
+        self.tracking.available_rates = self.mount_config_data['tracking_rates']
 
         # Parse moving speed
         moving_speed = response_data[20:21]
         self.moving_speed.code = moving_speed
+        self.tracking.available_rates = self.mount_config_data['tracking_speeds']
         self.moving_speed.description = self.parse_moving_speed(int(moving_speed))
 
         # Parse the time source
@@ -306,7 +316,7 @@ class ioptron:
         self.scope.send(':GTR#')
         returned_data = self.scope.recv()
         # Set the value and strip the control '#' at the end (response is d{5})
-        self.tracking_rate.custom = format((float(returned_data[:5]) * 0.0001), '.4f')
+        self.tracking.custom = format((float(returned_data[:5]) * 0.0001), '.4f')
 
     def get_guiding_rate(self):
         """Get the current RA and DEC guiding rates. They are 0.1 - 0.99 * siderial."""
@@ -512,10 +522,6 @@ class ioptron:
         """Return the mount's current tracking speed in factors of sidarial rate."""
         return str(self.mount_config_data['tracking_speeds'][rate]) + 'x'
 
-    def parse_tracking_rate(self, rate):
-        """Return the human readable tracking rate (i.e. 'siderial') of the mount."""
-        return str(self.mount_config_data['tracking_rates'][rate])
-
     def reset_settings(self, confirm: bool):
         """Reset all settings to default. Only applies if True is specified to indicate
         the reset is really wanted. Does not reset any time-based information."""
@@ -524,14 +530,29 @@ class ioptron:
             self.get_all_kinds_of_status()
             # TODO: Update other info once implemented
 
+    def set_arrow_button_movement_speed(self, rate):
+        """Set the movement speed when the N-S-E-W buttons are used. Rate must be
+        given as a multiplier of siderial (e.g. 2 for 2x or 64 for 64x.) The value
+        supplied must be supported by the mount. This value is wiped and replaced
+        by the default (64x) on the next powerup. Returns True after command is sent."""
+        assert rate in self.moving_speed.available_rates
+        self.moving_speed.button_rate = rate
+        movement_command = ":SR" + rate + "#"
+        self.scope.send(movement_command)
+        # Get the response; do nothing with it
+        self.scope.recv()
+        return True
+
     def set_custom_tracking_rate(self, rate):
         """Set a custom tracking rate to n.nnnn of the siderial rate. Only used
-        when 'custom' tracking rate is being used."""
+        when 'custom' tracking rate is being used. Returns True after command
+        is sent."""
         formatted_rate = (f"{float(rate):.6f}")
         send_command = ":RR" + formatted_rate + "#"
         self.scope.send(send_command)
         # Get the response; do nothing with it
         self.scope.recv()
+        return True
 
     def _set_dataclass_dms_from_arcseconds(self, data_class):
         """PRIVATE: Set DMS for a given dataclass like Altitude and Azimuth given
@@ -576,6 +597,17 @@ class ioptron:
         self.scope.send(tz_command)
         # Get the response; do nothing with it
         self.scope.recv()
+
+    def set_tracking_rate(self, rate):
+        """Set the tracking rate of the mount. 
+        Rate must be one supported by the mount (tracking.available_rates)
+        Returns True once command is sent."""
+        assert rate in (self.tracking.available_rates)
+        reverse = dict((v,k) for k,v in self.tracking.available_rates.items())
+        rate_command = ":RT" + reverse[rate] + "#"
+        self.scope.send(rate_command)
+        self.scope.recv()
+        return True
 
     def _toggle_pec_recording(self, turn_on: bool):
         """PRIVATE method for toggling PEC recording on and off."""

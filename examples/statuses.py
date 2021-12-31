@@ -6,25 +6,25 @@ print(">> Starting test of :GLS# >>")
 scope.get_all_kinds_of_status()
 
 # Lat and long
-print("Latitude:  {}".format(scope.latitude))
-print("Longitude:  {}".format(scope.longitude))
+print("Latitude:  {}".format(scope.location.latitude))
+print("Longitude:  {}".format(scope.location.longitude))
 
 # GPS
-print("GPS available:  {}".format(scope.gps.available))
-print("GPS locked:  {}".format(scope.gps.locked))
+print("GPS available:  {}".format(scope.location.gps_available))
+print("GPS locked:  {}".format(scope.location.gps_locked))
 
 # System status
 print("System status code:  {}".format(scope.system_status.code))
 print("System status description:  {}".format(scope.system_status.description))
 print("System status is slewing:  {}".format(scope.is_slewing))
-print("System status is tracking:  {}".format(scope.is_tracking))
-print("System status is parked:  {}".format(scope.is_parked))
+print("System status is tracking:  {}".format(scope.tracking.is_tracking))
+print("System status is parked:  {}".format(scope.parking.is_parked))
 print("System status pec:  {}".format(scope.pec))
-print("System status pec recorded:  {}".format(scope.pec_recorded))
+print("System status pec recorded:  {}".format(scope.pec.integrity_complete))
 
 # Tracking rate
-print("Tracking rate - code:  {}".format(scope.tracking_rate.code))
-print("Tracking rate - description:  {}".format(scope.tracking_rate.description))
+print("Tracking rate - code:  {}".format(scope.tracking.code))
+print("Tracking rate - description:  {}".format(scope.tracking.current_rate()))
 
 # Moving speed
 print("Moving speed - code:  {}".format(scope.moving_speed.code))
