@@ -12,8 +12,8 @@ is broken out by the same *command groups* as in the spec doc.
 - [x] `:GTR#` (12/27 - untested)
 - [x] `:GPC#` (12/30 - untested)
 - [x] `:GSR#` (12/30 - untested)
-- [ ] `:GAL#`
-- [ ] `:AG#`
+- [x] `:GAL#` (12/30 - untested)
+- [x] `:AG#` (12/30 - untested)
 - [ ] `:GMT#`
 - [ ] `:GGF#`
 - [ ] `:GPE#`

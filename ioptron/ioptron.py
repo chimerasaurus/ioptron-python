@@ -52,6 +52,13 @@ class GpsState:
     available: bool = False
     locked: bool = False
 
+@dataclass
+class GuidingRate:
+    """Informationa bout the RA and dec guiding rate. Can be 0.01 - 0.99.
+    Represents the rate * siderial rate."""
+    right_ascention: float = None
+    declination: float = None
+
 ## RA data
 @dataclass
 class RA:
@@ -123,6 +130,7 @@ class ioptron:
         self.latitude = None
         main_fw_info = self.get_main_firmwares()
         motor_fw_info = self.get_motor_firmwares()
+        self.mount_version = self.get_mount_version()
         self.firmware = Firmwares(mainboard=main_fw_info[0], hand_controller=main_fw_info[1], \
             ra=motor_fw_info[0], dec=motor_fw_info[1])
         self.gps = GpsState()
@@ -132,10 +140,10 @@ class ioptron:
         self.time_source = TimeSource()
         self.hemisphere = Hemisphere()
         self.moving_speed = MovingSpeed()
+        self.guiding_rate = GuidingRate()
         self.is_slewing = False
+        self.altitude_limit = None
         self.is_tracking = False
-        self.parking = Parking()
-        self.mount_version = self.get_mount_version()
         self.type = None
         self.position = None
         self.is_home = None
@@ -156,6 +164,9 @@ class ioptron:
         self.counterweight_direction = None
         self.altitude = Altitude()
         self.azimuth = Azimuth()
+
+        # Parking
+        self.parking = Parking()
 
     # Destructor that gets called when the object is destroyed
     def __del__(self):
@@ -268,12 +279,26 @@ class ioptron:
         self.azimuth.arcseconds = float(azimuth)
         self._set_dataclass_dms_from_arcseconds(self.azimuth)
 
+    def get_altitude_limit(self):
+        """Get the altitude limt currently set. Applies to tracking and slewing. Motion will
+        stop if it exceeds this value."""
+        self.scope.send(':GAL#')
+        returned_data = self.scope.recv()
+        self.altitude_limit = returned_data[0:3]
+
     def get_custom_tracking_rate(self):
         """Get the custom tracking rate, if it is set. Otherwise will be 1.000."""
         self.scope.send(':GTR#')
         returned_data = self.scope.recv()
         # Set the value and strip the control '#' at the end (response is d{5})
         self.tracking_rate.custom = bool(returned_data[:5])
+
+    def get_guiding_rate(self):
+        """Get the current RA and DEC guiding rates. They are 0.1 - 0.99 * siderial."""
+        self.scope.send(':AG#')
+        returned_data = self.scope.recv()
+        self.guiding_rate.right_ascention = float(returned_data[0:2])
+        self.guiding_rate.declination = float(returned_data[2:4])
 
     def get_max_slewing_speed(self):
         """Get the maximum slewing speed for this mount and returns a factor of siderial (eg 8x)."""
