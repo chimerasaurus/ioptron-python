@@ -84,6 +84,7 @@ class Tracking:
     custom: float = 1.0000
     available_rates: dict = None
     is_tracking: bool = False
+    memory_store: int = None
 
     def current_rate(self):
         """Return a string description of the current rate."""
@@ -321,6 +322,14 @@ class ioptron:
         self.scope.send(':GAL#')
         returned_data = self.scope.recv()
         self.altitude_limit = returned_data[0:3]
+
+    def get_coordinate_memory(self):
+        """Get the number of positions available to store RC and DEC positions that
+        do not exceed limits (altitude, mechanical, and flip.) Will return an int
+        between 0 and 2. Only returns a value on eq mounts, otherwise None."""
+        self.scope.send(':QAP#')
+        self.tracking.memory_store = self.scope.recv()[0:1]
+        return self.tracking.memory_store
 
     def get_custom_tracking_rate(self):
         """Get the custom tracking rate, if it is set. Otherwise will be 1.000."""
@@ -780,6 +789,16 @@ class ioptron:
         the hand controller."""
         self.scope.send(':qD#')
         self.is_slewing = False
+
+    def synchronize_mount(self):
+        """Synchrolizes the mount. The most recently defined RA and DEC, or ALT and AZ
+        become the commanded values. Ignored is slewing is in progress. Only useful for
+        initial calibration; not to be used when tracking. Returns True once command
+        is sent and response received. Otherwise False is returned."""
+        self.scope.send(":CM#")
+        if self.scope.recv() == '1':
+            return True
+        return False
 
     def unpark(self):
         """Unpark the moint. If the mount is unparked already, this does nothing. """
