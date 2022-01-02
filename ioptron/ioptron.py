@@ -96,8 +96,16 @@ class Tracking:
 class Meredian:
     """Holds meredian-related information."""
     code: int = None
-    description: str = None
     degree_limit: int = None
+
+    def description(self):
+        """Get the text description of the meredian treatment."""
+        if self.code == 0:
+            return "Stop at meredian"
+        if self.code == 1:
+            return "Flip at meredian with custom limit"
+        else:
+            return "Unknown or not set."
 
 @dataclass
 class MovingSpeed:
@@ -379,10 +387,6 @@ class ioptron:
         code = returned_data[0:1]
         degrees = returned_data[1:3]
         self.meredian.code = int(code)
-        if self.meredian.code == 0:
-            self.meredian.description = "Stop at meredian"
-        if self.meredian.code == 1:
-            self.meredian.description = "Flip at meredian with custom limit"
         self.meredian.degree_limit = int(degrees)
 
     def get_main_firmwares(self):
@@ -649,6 +653,25 @@ class ioptron:
         self.scope.recv()
         return True
 
+    def set_meredian_treatment(self, treatment: str, limit: int):
+        """Set the treatment of the meredian. First argument is whether to
+        'stop' or 'flip'. Second argument is the limit, in degrees (nn) to apply
+        the behavior to. Will return True once command is sent and response received.
+        Only works for equitorial mounts; will return False otherwise."""
+        # This works for eq mounts only
+        if self.mount_config_data['type'] != 'equatorial':
+            return False # only works on EQ mounts
+        # Validate arguments
+        assert treatment.lower() in ['stop', 'flip']
+        assert 0 <= limit <= 90
+        # This is an eq mount
+        self.meredian.code = 1 if treatment.lower() == 'flip' else 0
+        self.meredian.degree_limit = f'{limit:<02n}'
+        treatment_cmd = ":SMT" + self.meredian.code + self.meredian.degree_limit + "#"
+        self.scope.send(treatment_cmd)
+        if self.scope.recv() == '1':
+            return True
+        return False
 
     def set_time(self):
         """Set the current time on the moint to the current computer's time. Sets to UTC."""
