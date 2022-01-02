@@ -36,8 +36,8 @@ is broken out by the same *command groups* as in the spec doc.
 - [ ] `:SLAsTTTTTTTT#`
 - [x] `:SHE0#` (12/31 - untested)
 - [x] `:SHE1#` (12/31 - untested)
-- [ ] `:MSRn#`
-- [ ] `:SALsnn#`
+- [x] `:MSRn#` (1/1 - untested)
+- [x] `:SALsnn#` (1/1 - untested)
 - [ ] `:RGnnnn#`
 - [ ] `:SMTnnn#`
 - [ ] `:RAS#` (WIP, 1 todo)

@@ -530,6 +530,16 @@ class ioptron:
             self.get_all_kinds_of_status()
             # TODO: Update other info once implemented
 
+    def set_altitude_limit(self, limit: int):
+        """Set the maximum altitude limt, in degrees. Applies to tracking and slewing. Motion will
+        stop if it exceeds this value. Limit is +/- 89 degrees. Returns True after command sent."""
+        self.altitude_limit = str(limit).zfill(3)
+        set_command = ":SAL" + self.altitude_limit + "#" # Pad with zeros when single digit
+        self.scope.send(set_command)
+        # Get the response; do nothing with it
+        self.scope.recv()
+        return True
+
     def set_arrow_button_movement_speed(self, rate):
         """Set the movement speed when the N-S-E-W buttons are used. Rate must be
         given as a multiplier of siderial (e.g. 2 for 2x or 64 for 64x.) The value
@@ -601,6 +611,24 @@ class ioptron:
         self.scope.send(command)
         self.scope.recv()
         return True
+
+    def set_max_slewing_speed(self, speed: str):
+        """Set the maximum slewing speed. Input is the maximum siderial
+        rate desired. Must be '256x', '512x', or 'max'. The max rate
+        will depend on the mount. Returns True once command is sent."""
+        assert speed in ['256x', '512x', 'max']
+        # Set to max by default
+        speed_bit = '9'
+        if speed == '256x':
+            speed_bit = '7'
+        if speed == '512x':
+            speed_bit = '8'
+        speed_command = ":MSR" + speed_bit + "#"
+        self.scope.send(speed_command)
+        # Get the response; do nothing with it
+        self.scope.recv()
+        return True
+
 
     def set_time(self):
         """Set the current time on the moint to the current computer's time. Sets to UTC."""

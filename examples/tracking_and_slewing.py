@@ -37,3 +37,8 @@ print("TRACKING: available rates:: {}".format(scope.tracking.available_rates))
 print("TRACKING: set siderial:: {}".format(scope.set_tracking_rate('siderial')))
 scope.get_all_kinds_of_status()
 print("TRACKING: current rate:: {}".format(scope.tracking.current_rate()))
+
+# Movement speed
+print("TRACKING: get max slew rate:: {}".format(str(scope.get_max_slewing_speed())))
+print("TRACKING: set max slew rate at 512x:: {}".format(scope.set_max_slewing_speed('512x')))
+print("TRACKING: get max slew rate:: {}".format(str(scope.get_max_slewing_speed())))
