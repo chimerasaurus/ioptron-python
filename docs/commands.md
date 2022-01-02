@@ -15,16 +15,16 @@ is broken out by the same *command groups* as in the spec doc.
 - [x] `:GAL#` (12/30)
 - [x] `:AG#` (12/30)
 - [x] `:GMT#` (12/30)
-- [x] `:GGF#` (12/30 - untested)
+- [x] `:GGF#` (12/30)
 - [x] `:GPE#` (12/30)
 - [x] `:GPR#` (12/30)
 
 ## Change Settings
-- [x] `:RT0#` (12/30 - untested)
-- [x] `:RT1#` (12/30 - untested)
-- [x] `:RT2#` (12/30 - untested)
-- [x] `:RT3#` (12/30 - untested)
-- [x] `:RT4#` (12/30 - untested)
+- [x] `:RT0#`
+- [x] `:RT1#`
+- [x] `:RT2#`
+- [x] `:RT3#`
+- [x] `:RT4#`
 - [x] `:SRn#` (12/30 - untested)
 - [x] `:SGF0#` (12/30 - untested)
 - [x] `:SGF1#` (12/30 - untested)
@@ -34,9 +34,9 @@ is broken out by the same *command groups* as in the spec doc.
 - [x] `:SUTXXXXXXXXXXXXX#` (12/27)
 - [x] `:SLOsTTTTTTTT#` (1/1 - untested)
 - [x] `:SLAsTTTTTTTT#` (1/1 - untested)
-- [x] `:SHE0#` (12/31 - untested)
-- [x] `:SHE1#` (12/31 - untested)
-- [x] `:MSRn#` (1/1 - untested)
+- [x] `:SHE0#` (12/31)
+- [x] `:SHE1#` (12/31)
+- [x] `:MSRn#` (1/1)
 - [x] `:SALsnn#` (1/1 - untested)
 - [x] `:RGnnnn#` (1/1 - untested)
 - [x] `:SMTnnn#` (1/1 - untested)

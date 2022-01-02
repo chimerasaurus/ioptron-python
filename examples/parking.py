@@ -3,7 +3,7 @@ import ioptron.ioptron as iopt
 
 scope = iopt.ioptron('COM5')
 # Park the mount
-print("PARKING: parking mount:: {}".format(scope.park()))
+print("PARKING: mount: {}".format(scope.park()))
 print("PARKING: is parked:: {}".format(scope.parking.is_parked))
 
 # Unpark the mount

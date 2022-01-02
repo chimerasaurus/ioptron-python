@@ -34,7 +34,7 @@ print("PEC: recording:: {}".format(scope.pec.recording))
 scope.get_all_kinds_of_status()
 print("TRACKING: current rate:: {}".format(scope.tracking.current_rate()))
 print("TRACKING: available rates:: {}".format(scope.tracking.available_rates))
-print("TRACKING: set siderial:: {}".format(scope.set_tracking_rate('siderial')))
+print("TRACKING: set siderial:: {}".format(scope.set_tracking_rate('sidereal')))
 scope.get_all_kinds_of_status()
 print("TRACKING: current rate:: {}".format(scope.tracking.current_rate()))
 

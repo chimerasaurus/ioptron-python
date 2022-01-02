@@ -87,6 +87,8 @@ class Tracking:
 
     def current_rate(self):
         """Return a string description of the current rate."""
+        if self.is_tracking == False or None:
+            return "not tracking"
         if self.code is not None:
             return self.available_rates[self.code]
         # Not set, return none
@@ -276,7 +278,7 @@ class ioptron:
         # Parse moving speed
         moving_speed = response_data[20:21]
         self.moving_speed.code = moving_speed
-        self.tracking.available_rates = self.mount_config_data['tracking_speeds']
+        self.moving_speed.available_rates = self.mount_config_data['tracking_speeds']
         self.moving_speed.description = self.parse_moving_speed(int(moving_speed))
 
         # Parse the time source
@@ -291,6 +293,7 @@ class ioptron:
 
         # Parse the hemisphere
         hemisphere = response_data[22:23]
+        print("HEMCODE:  --  " + hemisphere)
         self.hemisphere.code = hemisphere
         if hemisphere == '0':
             self.hemisphere.location = 's'
@@ -535,6 +538,20 @@ class ioptron:
             self.get_time_information()
             self.get_ra_and_dec()
             self.get_alt_and_az()
+    
+    def refresh_status(self):
+        """Performs a refresh of the 4 basic mount status commands. These are the 4 updates
+        the iOptron driver performs very refresh cycle. Only perform if last update > 1
+        second ago to avoid flooding the mount."""
+        # Return false if last update was recent
+        if time.time() - self.last_update < 1:
+            return False
+        self.get_all_kinds_of_status()
+        self.get_alt_and_az()
+        self.get_ra_and_dec()
+        self.get_time_information()
+        self.last_update = time.time()
+        return True
 
     def set_altitude_limit(self, limit: int):
         """Set the maximum altitude limt, in degrees. Applies to tracking and slewing. Motion will
@@ -565,7 +582,7 @@ class ioptron:
         0.50 * siderial guiding. First argument is the RA, second argument is DEC
         Only works for equitorial mounts. Returns true once command is sent
         and a response received."""
-        assert self.mount_config_data['type'] is 'equatorial' # only works on EQ mounts
+        assert self.mount_config_data['type'] == 'equatorial' # only works on EQ mounts
         assert right_ascention >= 0.01 and right_ascention <= 0.90 \
             and declination >= 0.01 and declination <= 0.90
         self.guiding.right_ascention_rate = round(right_ascention, 2)
@@ -630,8 +647,8 @@ class ioptron:
         """Set the mount's hemisphere. Supplied argument must be 'north', 'south', or
         'n' or 's'. Returns True after command is sent."""
         assert direction.lower() in ['north', 'south', 'n', 's']
-        hemisphere = 0 if direction[0:1] is 's' else 1
-        command = ":SHE" + hemisphere + "#"
+        hemisphere = 0 if direction[0:1] == 's' else 1
+        command = ":SHE" + str(hemisphere) + "#"
         self.scope.send(command)
         self.scope.recv()
         return True
@@ -716,13 +733,15 @@ class ioptron:
     def set_tracking_rate(self, rate):
         """Set the tracking rate of the mount. 
         Rate must be one supported by the mount (tracking.available_rates)
-        Returns True once command is sent."""
-        assert rate in (self.tracking.available_rates)
+        Returns True once command is sent and response reveived, otherwise
+        False is returned."""
+        assert rate in (list(self.tracking.available_rates.values()))
         reverse = dict((v,k) for k,v in self.tracking.available_rates.items())
-        rate_command = ":RT" + reverse[rate] + "#"
+        rate_command = ":RT" + str(reverse[rate]) + "#"
         self.scope.send(rate_command)
-        self.scope.recv()
-        return True
+        if self.scope.recv() == '1':
+            return True
+        return False
 
     def _toggle_pec_recording(self, turn_on: bool):
         """PRIVATE method for toggling PEC recording on and off."""
