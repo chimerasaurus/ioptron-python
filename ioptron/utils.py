@@ -29,6 +29,10 @@ def convert_arc_seconds_to_hms(seconds):
     seconds = (Decimal(minutes) % 1) * 60
     return (int(hours), int(minutes), int(seconds))
 
+def convert_degrees_to_arc_seconds(seconds):
+    """Convert degrees into arcseconds."""
+    return (seconds * 3600) / 0.01 # The value is 0.01 arc seconds
+
 def convert_j2k_to_unix_utc(sec, offset = 0):
     """Convert J2000 in 0.01 seconds to formatted UNIX in ms with offset if needed."""
     converted = datetime(2000,1,1,12,0) + timedelta(milliseconds=sec) + timedelta(minutes=offset)
@@ -37,10 +41,6 @@ def convert_j2k_to_unix_utc(sec, offset = 0):
 def convert_unix_to_formatted(unix_ms):
     """Convert a unix timestamp to HH:MM:SS.ss."""
     return datetime.utcfromtimestamp(int(unix_ms)).strftime("%m/%d/%Y, %H:%M:%S.%f")[:-3]
-
-def degrees_to_arc_seconds(seconds):
-    """Convert degrees into arcseconds."""
-    return (seconds * 3600) / 0.01 # The value is 0.01 arc seconds
 
 def get_utc_offset_min():
     """Get the UTC offset of this computer in minutes."""

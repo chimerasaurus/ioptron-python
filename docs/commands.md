@@ -32,14 +32,14 @@ is broken out by the same *command groups* as in the spec doc.
 - [x] `:SDS0#` (12/26)
 - [x] `:SDS1#` (12/26)
 - [x] `:SUTXXXXXXXXXXXXX#` (12/27)
-- [ ] `:SLOsTTTTTTTT#`
-- [ ] `:SLAsTTTTTTTT#`
+- [x] `:SLOsTTTTTTTT#` (1/1 - untested)
+- [x] `:SLAsTTTTTTTT#` (1/1 - untested)
 - [x] `:SHE0#` (12/31 - untested)
 - [x] `:SHE1#` (12/31 - untested)
 - [x] `:MSRn#` (1/1 - untested)
 - [x] `:SALsnn#` (1/1 - untested)
 - [x] `:RGnnnn#` (1/1 - untested)
-- [ ] `:SMTnnn#`
+- [x] `:SMTnnn#` (1/1 - untested)
 - [x] `:RAS#` (1/1 - untested)
 
 ## Mount Motion

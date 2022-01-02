@@ -136,9 +136,9 @@ class TimeSource:
     code: int = None
     description: str = "unset"
 
-## Time information
 @dataclass
 class TimeInfo:
+    """Time related information."""
     utc_offset: int = None
     dst: bool = None
     jd: int = None
@@ -146,9 +146,9 @@ class TimeInfo:
     unix_offset: float = None
     formatted: str = None
 
-## Hemisphere
 @dataclass
 class Hemisphere:
+    """Holds information about the hemisphere of the mount."""
     code: int = None
     location: str = None
 
@@ -635,6 +635,32 @@ class ioptron:
         self.scope.send(command)
         self.scope.recv()
         return True
+
+    def set_latitude(self, latitude: float):
+        """Set the latitude of the mount in degrees. Values range from +/- 90.
+        North is positive, south is negative. Returns True when command is sent and
+        response reveived, otherwise False is returned."""
+        assert -90.0 <= latitude <= 90.0
+        self.location.latitude = latitude
+        arcseconds = f'{utils.convert_degrees_to_arc_seconds(self.location.latitude):08d}'
+        lat_command = ":SLO" + arcseconds + "#"
+        self.scope.send(lat_command)
+        if self.scope.recv() == '1':
+            return True
+        return False
+
+    def set_longitude(self, longitude: float):
+        """Set the longitude of the mount in degrees. Values range from +/- 180.
+        East is positive, west is negative. Returns True when command is sent and
+        response reveived, otherwise False is returned."""
+        assert -180.0 <= longitude <= 180.0
+        self.location.longitude = longitude
+        arcseconds = f'{utils.convert_degrees_to_arc_seconds(self.location.longitude):08d}'
+        long_command = ":SLO" + arcseconds + "#"
+        self.scope.send(long_command)
+        if self.scope.recv() == '1':
+            return True
+        return False
 
     def set_max_slewing_speed(self, speed: str):
         """Set the maximum slewing speed. Input is the maximum siderial
