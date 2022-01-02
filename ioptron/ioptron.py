@@ -319,7 +319,7 @@ class ioptron:
         self.tracking.custom = format((float(returned_data[:5]) * 0.0001), '.4f')
 
     def get_guiding_rate(self):
-        """Get the current RA and DEC guiding rates. They are 0.1 - 0.99 * siderial."""
+        """Get the current RA and DEC guiding rates. They are 0.01 - 0.99 * siderial."""
         self.scope.send(':AG#')
         returned_data = self.scope.recv()
         # Convert values to 0.01 - 0.9
@@ -553,6 +553,24 @@ class ioptron:
         self.scope.send(movement_command)
         # Get the response; do nothing with it
         self.scope.recv()
+        return True
+
+    def set_guiding_rate(self, right_ascention: float, declination: float):
+        """Set the current RA and DEC guiding rates. The valid range for both is 0.01 - 0.90.
+        These values will be used to set the guiding rate * siderial. For example 0.50 will be
+        0.50 * siderial guiding. First argument is the RA, second argument is DEC
+        Only works for equitorial mounts. Returns true once command is sent
+        and a response received."""
+        assert self.mount_config_data['type'] is 'equatorial' # only works on EQ mounts
+        assert right_ascention >= 0.01 and right_ascention <= 0.90 \
+            and declination >= 0.01 and declination <= 0.90
+        self.guiding.right_ascention_rate = round(right_ascention, 2)
+        self.guiding.declination_rate = round(declination, 2)
+        guiding_rate_command = ":RG" + f'{self.guiding.right_ascention_rate:<04n}' \
+            + f'{self.guiding.declination_rate:<04n}' + "#"
+        self.scope.send(guiding_rate_command)
+        returned_data = self.scope.recv()
+        assert returned_data == '1'
         return True
 
     def set_ra_guiding_filter_status(self, enabled: bool):
