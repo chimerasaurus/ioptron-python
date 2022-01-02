@@ -40,7 +40,7 @@ is broken out by the same *command groups* as in the spec doc.
 - [x] `:SALsnn#` (1/1 - untested)
 - [ ] `:RGnnnn#`
 - [ ] `:SMTnnn#`
-- [ ] `:RAS#` (WIP, 1 todo)
+- [x] `:RAS#` (1/1 - untested)
 
 ## Mount Motion
 - [ ] `:MS1#`

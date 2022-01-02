@@ -528,7 +528,9 @@ class ioptron:
         if confirm is True:
             self.scope.send(':RAS#')
             self.get_all_kinds_of_status()
-            # TODO: Update other info once implemented
+            self.get_time_information()
+            self.get_ra_and_dec()
+            self.get_alt_and_az()
 
     def set_altitude_limit(self, limit: int):
         """Set the maximum altitude limt, in degrees. Applies to tracking and slewing. Motion will
