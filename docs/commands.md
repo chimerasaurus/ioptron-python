@@ -43,8 +43,8 @@ is broken out by the same *command groups* as in the spec doc.
 - [x] `:RAS#` (1/1 - untested)
 
 ## Mount Motion
-- [ ] `:MS1#`
-- [ ] `:MS2#`
+- [x] `:MS1#` (1/3 - untested)
+- [x] `:MS2#` (1/3 - untested)
 - [ ] `:MSS#`
 - [X] `:Q#`
 - [ ] `:ST0#`

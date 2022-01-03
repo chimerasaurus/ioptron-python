@@ -521,6 +521,22 @@ class ioptron:
             self.scope.recv()
         # Maybe worth throwing an exception
 
+    def move_to_defined_ra_and_dec(self, normal: bool):
+        """Commands the mount to move to the recently (most) defined RA and DEC.
+        The RA and DEC must be defined previous to this command being useful. The
+        normal boolean specifies if the movement is 'normal' or if the movement should
+        slew to the 'counterweight up' position. Counterweight up is for eq mounts
+        only. Returns True when command is sent and response received, otherwise will
+        return False."""
+        if self.mount_config_data['type'] != 'equatorial' and normal is False:
+            return False
+        flip_bit = 2 if normal is False else 1
+        move_command = ":MS" + flip_bit + "#"
+        self.scope.send(move_command)
+        if self.scope.recv() == '1':
+            return True
+        return False
+
     def park(self):
         """Park the mount at the most recently defined parking position.
         Returns a true if successful or false if parking failed."""
