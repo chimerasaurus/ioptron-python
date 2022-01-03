@@ -18,7 +18,7 @@ class Altitude:
     arcseconds: float = None
     degrees: float = None
     minues: int = None
-    seconds: int = None
+    seconds: float = None
 
 ## Azimuth data
 @dataclass
@@ -27,7 +27,7 @@ class Azimuth:
     arcseconds: float = None
     degrees: float = None
     minues: int = None
-    seconds: int = None
+    seconds: float = None
 
 @dataclass
 class DEC:
@@ -35,7 +35,7 @@ class DEC:
     arcseconds: float = None
     degrees: int = None
     minutes: int = None
-    seconds: int = None
+    seconds: float = None
 
 @dataclass
 class Firmwares:
@@ -68,7 +68,7 @@ class RA:
     arcseconds: float = None
     hours: int = None
     minutes: int = None
-    seconds: int = None
+    seconds: float = None
     degrees: float = None
 
 ## System status
@@ -585,6 +585,46 @@ class ioptron:
         self.scope.recv()
         return True
 
+    def _set_commanded_axis_from_dms(self, degrees, minutes, seconds, axis):
+        """Defines the commanded axis to the specified degrees, minutes, and seconds. Will convert
+        the DMS value to arcseconds and send it to the mount. PRIVATE use to keep things DRY(er).
+        Returns True when command is sent and response received, otherwise returns False."""
+        arcseconds = str(utils.convert_dms_to_arc_seconds(degrees, minutes, seconds)).zfill(8)
+        command_dict = {'ra': 'SRA', 'dec': 'Sds', 'alt': 'Sas', 'az': 'Sz'}
+        assert axis in command_dict.keys()
+        axis_command = ":" + command_dict[axis] + arcseconds + "#"
+        self.scope.send(axis_command)
+        if self.scope.recv() == '1':
+            return True
+        return False
+
+    def set_commanded_declination(self, degrees, minutes, seconds):
+        """Set the commanded right declination (DEC). Will return True when command is sent and response
+        is received, otherwise will return False. Slew or calibrate commands operate based on the most
+        recently defined value."""
+        return self._set_commanded_axis_from_dms(degrees, minutes, seconds, 'dec')
+
+    def set_commanded_right_ascension(self, degrees, minutes, seconds):
+        """Set the commanded right ascension (RA). Will return True when command is sent and response
+        is received, otherwise will return False. Slew or calibrate commands operate based on the most
+        recently defined value."""
+        return self._set_commanded_axis_from_dms(degrees, minutes, seconds, 'ra')
+
+    def set_commanded_dec(self, degrees, minutes, seconds):
+        """Set the commanded right declination (DEC). Will return True when command is sent and response
+        is received, otherwise will return False. Slew or calibrate commands operate based on the most
+        recently defined value."""
+        return self._set_commanded_axis_from_dms(degrees, minutes, seconds, 'dec')
+
+    def set_current_position_as_zero(self):
+        """Set the current position as the zero position. Returns True when command is sent and
+        a response is received. Otherwise returns False."""
+        szp_command = ":SZP#"
+        self.scope.send(szp_command)
+        if self.scope.recv() == '1':
+            return True
+        return False
+
     def set_guiding_rate(self, right_ascention: float, declination: float):
         """Set the current RA and DEC guiding rates. The valid range for both is 0.01 - 0.90.
         These values will be used to set the guiding rate * siderial. For example 0.50 will be
@@ -725,7 +765,7 @@ class ioptron:
             return True
         return False
 
-    def set_parking_altitude(self, degrees: int, minutes: int, seconds: int):
+    def set_parking_altitude(self, degrees: int, minutes: int, seconds: float):
         """Set the parking altitude. Takes a position in integer degrees, minutes, and seconds.
         Returns True when command is sent and response received. Returns False otherwise."""
         arcseconds = str(utils.convert_dms_to_arc_seconds(degrees, minutes, seconds)).zfill(8)
@@ -735,6 +775,15 @@ class ioptron:
             return True
         return False
 
+    def set_parking_azimuth(self, degrees: int, minutes: int, seconds: int):
+        """Set the parking azimuth . Takes a position in integer degrees, minutes, and seconds.
+        Returns True when command is sent and response received. Returns False otherwise."""
+        arcseconds = str(utils.convert_dms_to_arc_seconds(degrees, minutes, seconds)).zfill(8)
+        park_alt_command = ":SPA" + arcseconds + "#"
+        self.scope.send(park_alt_command)
+        if self.scope.recv() == '1':
+            return True
+        return False
 
     def set_time(self):
         """Set the current time on the moint to the current computer's time. Sets to UTC."""

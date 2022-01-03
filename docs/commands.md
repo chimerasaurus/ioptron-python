@@ -80,8 +80,8 @@ is broken out by the same *command groups* as in the spec doc.
 - [ ] `:SdsTTTTTTTT#`
 - [ ] `:SasTTTTTTTT#`
 - [ ] `:SzTTTTTTTTT#`
-- [ ] `:SZP#`
-- [ ] `:SPATTTTTTTTT#`
+- [x] `:SZP#` (1/2 - untested)
+- [x] `:SPATTTTTTTTT#` (1/2 - untested)
 - [x] `:SPHTTTTTTTT#` (1/2 - untested)
 
 ## Misc / mount info

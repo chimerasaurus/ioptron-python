@@ -19,7 +19,7 @@ def convert_arc_seconds_to_dms(seconds):
     degrees = convert_arc_seconds_to_degrees(seconds)
     degree = int(degrees)
     minute = int((degrees - degree) * 60)
-    second = int((degrees - degree - minute/60) * 3600)
+    second = float((degrees - degree - minute/60) * 3600)
     return (degree, abs(minute), abs(second))
 
 def convert_arc_seconds_to_hms(seconds):
@@ -27,20 +27,20 @@ def convert_arc_seconds_to_hms(seconds):
     hours = float(seconds) / (15.0 * 60.0 * 60.0 * 100.0) #Thank you INDI.
     minutes = (Decimal(hours) % 1) * 60
     seconds = (Decimal(minutes) % 1) * 60
-    return (int(hours), int(minutes), int(seconds))
+    return (int(hours), int(minutes), float(seconds))
 
 def convert_degrees_to_arc_seconds(seconds):
     """Convert degrees into arcseconds."""
     return (seconds * 3600) / 0.01 # The value is 0.01 arc seconds
 
-def convert_dms_to_arc_seconds(degrees: int, minutes: int, seconds: int):
+def convert_dms_to_arc_seconds(degrees: int, minutes: int, seconds: float):
     """Convert degrees, minutes, and seconds to arcseconds. Returns an integer in
     arcseconds."""
     decimal_value = convert_dms_to_degrees(degrees, minutes, seconds)
     arcseconds = convert_degrees_to_arc_seconds(decimal_value)
     return int(arcseconds)
 
-def convert_dms_to_degrees(degrees: int, minutes: int, seconds: int):
+def convert_dms_to_degrees(degrees: int, minutes: int, seconds: float):
     """Convert a DMS value to decimal degrees. Will round to 5 decimal places
     if it is needed."""
     return round(degrees + (minutes / 60) + (seconds / 3600), 5)
