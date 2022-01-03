@@ -725,6 +725,17 @@ class ioptron:
             return True
         return False
 
+    def set_parking_altitude(self, degrees: int, minutes: int, seconds: int):
+        """Set the parking altitude. Takes a position in integer degrees, minutes, and seconds.
+        Returns True when command is sent and response received. Returns False otherwise."""
+        arcseconds = str(utils.convert_dms_to_arc_seconds(degrees, minutes, seconds)).zfill(8)
+        park_alt_command = ":SPH" + arcseconds + "#"
+        self.scope.send(park_alt_command)
+        if self.scope.recv() == '1':
+            return True
+        return False
+
+
     def set_time(self):
         """Set the current time on the moint to the current computer's time. Sets to UTC."""
         j2k_time = str(utils.get_utc_time_in_j2k()).zfill(13)

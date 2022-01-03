@@ -82,7 +82,7 @@ is broken out by the same *command groups* as in the spec doc.
 - [ ] `:SzTTTTTTTTT#`
 - [ ] `:SZP#`
 - [ ] `:SPATTTTTTTTT#`
-- [ ] `:SPHTTTTTTTT#`
+- [x] `:SPHTTTTTTTT#` (1/2 - untested)
 
 ## Misc / mount info
 - [x] `:MountInfo#`

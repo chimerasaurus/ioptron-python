@@ -49,6 +49,22 @@ class Test_CoordinateFunctions(unittest.TestCase):
         with self.subTest():
             self.assertEqual(utils.convert_arc_seconds_to_hms(five_point_eight_three), (5, 50, 17))
 
+    def test_convert_dms_to_srcseconds(self):
+        """Test the 'convert_dms_to_arcseconds' function to convert DMS values, which are
+        all integers, to an integer arcsecond value."""
+        degrees = 45
+        minutes = 30
+        seconds = 17
+        self.assertEqual(utils.convert_dms_to_arc_seconds(degrees, minutes, seconds), 16381699)
+
+    def test_convert_dms_to_degrees(self):
+        """Test the 'convert_dms_to_degrees' function to convert DMS values, which are
+        all integers, to a decimal degree value."""
+        degrees = 45
+        minutes = 30
+        seconds = 17
+        self.assertEqual(utils.convert_dms_to_degrees(degrees, minutes, seconds), 45.50472)
+
     def test_get_utc_time_in_j2k(self):
         """Test getting the UTC time in j2k. This only tests for a reasonable return."""
         j2k_time = utils.get_utc_time_in_j2k()

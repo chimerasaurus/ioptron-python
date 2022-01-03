@@ -33,6 +33,18 @@ def convert_degrees_to_arc_seconds(seconds):
     """Convert degrees into arcseconds."""
     return (seconds * 3600) / 0.01 # The value is 0.01 arc seconds
 
+def convert_dms_to_arc_seconds(degrees: int, minutes: int, seconds: int):
+    """Convert degrees, minutes, and seconds to arcseconds. Returns an integer in
+    arcseconds."""
+    decimal_value = convert_dms_to_degrees(degrees, minutes, seconds)
+    arcseconds = convert_degrees_to_arc_seconds(decimal_value)
+    return int(arcseconds)
+
+def convert_dms_to_degrees(degrees: int, minutes: int, seconds: int):
+    """Convert a DMS value to decimal degrees. Will round to 5 decimal places
+    if it is needed."""
+    return round(degrees + (minutes / 60) + (seconds / 3600), 5)
+
 def convert_j2k_to_unix_utc(sec, offset = 0):
     """Convert J2000 in 0.01 seconds to formatted UNIX in ms with offset if needed."""
     converted = datetime(2000,1,1,12,0) + timedelta(milliseconds=sec) + timedelta(minutes=offset)
