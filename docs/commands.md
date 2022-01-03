@@ -76,10 +76,10 @@ is broken out by the same *command groups* as in the spec doc.
 # Position
 - [x] `:CM#` (1/2 - untested)
 - [x] `:QAP#` (1/2 - untested)
-- [ ] `:SRATTTTTTTTT#`
-- [ ] `:SdsTTTTTTTT#`
-- [ ] `:SasTTTTTTTT#`
-- [ ] `:SzTTTTTTTTT#`
+- [x] `:SRATTTTTTTTT#` (1/2 - untested)
+- [x] `:SdsTTTTTTTT#` (1/2 - untested)
+- [x] `:SasTTTTTTTT#` (1/3 - untested)
+- [x] `:SzTTTTTTTTT#` (1/3 - untested)
 - [x] `:SZP#` (1/2 - untested)
 - [x] `:SPATTTTTTTTT#` (1/2 - untested)
 - [x] `:SPHTTTTTTTT#` (1/2 - untested)

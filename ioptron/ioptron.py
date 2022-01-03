@@ -598,23 +598,29 @@ class ioptron:
             return True
         return False
 
+    def set_commanded_altitude(self, degrees, minutes, seconds):
+        """Set the commanded right altitude (ALT). Will return True when command is sent
+        and response is received, otherwise will return False. Slew or calibrate commands
+        operate based on the most recently defined value."""
+        return self._set_commanded_axis_from_dms(degrees, minutes, seconds, 'alt')
+
+    def set_commanded_azimuth(self, degrees, minutes, seconds):
+        """Set the commanded right azimuth (AZI). Will return True when command is sent
+        and response is received, otherwise will return False. Slew or calibrate commands
+        operate based on the most recently defined value."""
+        return self._set_commanded_axis_from_dms(degrees, minutes, seconds, 'az')
+
     def set_commanded_declination(self, degrees, minutes, seconds):
-        """Set the commanded right declination (DEC). Will return True when command is sent and response
-        is received, otherwise will return False. Slew or calibrate commands operate based on the most
-        recently defined value."""
+        """Set the commanded right declination (DEC). Will return True when command is sent
+        and response is received, otherwise will return False. Slew or calibrate commands
+        operate based on the most recently defined value."""
         return self._set_commanded_axis_from_dms(degrees, minutes, seconds, 'dec')
 
     def set_commanded_right_ascension(self, degrees, minutes, seconds):
-        """Set the commanded right ascension (RA). Will return True when command is sent and response
-        is received, otherwise will return False. Slew or calibrate commands operate based on the most
-        recently defined value."""
+        """Set the commanded right ascension (RA). Will return True when command is sent and
+        response is received, otherwise will return False. Slew or calibrate commands operate
+        based on the most recently defined value."""
         return self._set_commanded_axis_from_dms(degrees, minutes, seconds, 'ra')
-
-    def set_commanded_dec(self, degrees, minutes, seconds):
-        """Set the commanded right declination (DEC). Will return True when command is sent and response
-        is received, otherwise will return False. Slew or calibrate commands operate based on the most
-        recently defined value."""
-        return self._set_commanded_axis_from_dms(degrees, minutes, seconds, 'dec')
 
     def set_current_position_as_zero(self):
         """Set the current position as the zero position. Returns True when command is sent and
