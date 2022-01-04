@@ -211,6 +211,22 @@ class ioptron:
         except:
             print("CLEANUP: not needed or was unclean")
 
+    def enable_pec_playback(self, enabled: bool):
+        """Enable or disable PEC playback, toggled by the supplied boolean.
+        Setting to True enables PEC playback, setting to False disables playback.
+        Only available on eq mountd without encoders. Returns True when command sent
+        and response is received, otherwise returns False."""
+        if self.mount_config_data['type'] != "equatorial" or \
+            self.mount_config_data['capabilities']['encoders'] == True:
+            return False
+        if enabled is True:
+            self.scope.send(":SPP1#")
+        if enabled is False:
+            self.scope.send(":SPP0#")
+        if self.scope.recv() == '1':
+            return True
+        return False
+
     # To get the joke here, read the official protocol docs
     def get_all_kinds_of_status(self):
         self.scope.send(":GLS#")
@@ -520,6 +536,17 @@ class ioptron:
             # Get the response; do nothing with it
             self.scope.recv()
         # Maybe worth throwing an exception
+
+    def move_to_defined_alt_and_az(self):
+        """Commands the mount to move to the recently (most) defined ALT and AZ.
+        The ALT and AZ must be defined previous to this command being useful.
+        Returns True when command is sent and response received, otherwise will
+        return False."""
+        move_command = ":MSS#"
+        self.scope.send(move_command)
+        if self.scope.recv() == '1':
+            return True
+        return False
 
     def move_to_defined_ra_and_dec(self, normal: bool):
         """Commands the mount to move to the recently (most) defined RA and DEC.
@@ -853,6 +880,15 @@ class ioptron:
         """Stop recording the periodic error. Only used in eq mounts without encoders."""
         self._toggle_pec_recording(False)
 
+    def start_tracking(self):
+        """Commands the mount to start tracking. Returns True when command is sent and
+        received, otherwise returns False."""
+        tracking_command = ":ST1#"
+        self.scope.send(tracking_command)
+        if self.scope.recv() == '1':
+            return True
+        return False
+
     def stop_all_movement(self):
         """Stop all slewing no matter the source of slewing or the direction(s)."""
         self.scope.send(':Q#')
@@ -871,6 +907,15 @@ class ioptron:
         the hand controller."""
         self.scope.send(':qD#')
         self.is_slewing = False
+
+    def stop_tracking(self):
+        """Commands the mount to stop tracking. Returns True when command is sent and
+        received, otherwise returns False."""
+        tracking_command = ":ST0#"
+        self.scope.send(tracking_command)
+        if self.scope.recv() == '1':
+            return True
+        return False
 
     def synchronize_mount(self):
         """Synchrolizes the mount. The most recently defined RA and DEC, or ALT and AZ

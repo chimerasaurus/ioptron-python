@@ -45,10 +45,10 @@ is broken out by the same *command groups* as in the spec doc.
 ## Mount Motion
 - [x] `:MS1#` (1/3 - untested)
 - [x] `:MS2#` (1/3 - untested)
-- [ ] `:MSS#`
+- [x] `:MSS#` (1/3 - untested)
 - [X] `:Q#`
-- [ ] `:ST0#`
-- [ ] `:ST1#`
+- [x] `:ST0#` (1/3 - untested)
+- [x] `:ST1#` (1/3 - untested)
 - [ ] `:ZSXXXXX#`
 - [ ] `:ZQXXXXX#`
 - [ ] `:ZEXXXXX#`
@@ -63,8 +63,8 @@ is broken out by the same *command groups* as in the spec doc.
 - [X] `:MSH#`
 - [x] `:SPR0#` (12/27 - untested)
 - [x] `:SPR1#` (12/27 - untested)
-- [ ] `:SPP0#`
-- [ ] `:SPP1#`
+- [x] `:SPP0#` (1/3 - untested)
+- [x] `:SPP1#` (1/3 - untested)
 - [x] `:RRnnnnn#` (12/27 - untested)
 - [ ] `:mn#`
 - [ ] `:me#`
