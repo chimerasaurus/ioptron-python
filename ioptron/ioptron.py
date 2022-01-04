@@ -537,6 +537,34 @@ class ioptron:
             self.scope.recv()
         # Maybe worth throwing an exception
 
+    def move_east(self):
+        """Commands the mount to move to the east. Mount will continue moving
+        until a stop command (stop_all_movement or stop_n_s_movement") is issued.
+        This command is similar to the up "right" button on the hand controller.
+        Returns True when command is sent and response received, otherwise will
+        return False."""
+        return self._move_in_cardinal_direction('east')
+
+    def _move_in_cardinal_direction(self, direction: str):
+        """PRIVATE method to move the mount in the supplied cardinal direction.
+        Returns True when command is sent and response received, otherwise will
+        return False."""
+        assert direction.lower() in direction.keys()
+        directions = {'north': "mn", 'east': 'me', 'south': 'ms', 'west': 'mw'}
+        move_command = ":" + directions[direction.lower()] + "#"
+        self.scope.send(move_command)
+        if self.scope.recv() == '1':
+            return True
+        return False
+
+    def move_south(self):
+        """Commands the mount to move to the south. Mount will continue moving
+        until a stop command (stop_all_movement or stop_n_s_movement") is issued.
+        This command is similar to the up "down" button on the hand controller.
+        Returns True when command is sent and response received, otherwise will
+        return False."""
+        return self._move_in_cardinal_direction('south')
+
     def move_to_defined_alt_and_az(self):
         """Commands the mount to move to the recently (most) defined ALT and AZ.
         The ALT and AZ must be defined previous to this command being useful.
@@ -548,21 +576,21 @@ class ioptron:
             return True
         return False
 
-    def move_to_defined_ra_and_dec(self, normal: bool):
-        """Commands the mount to move to the recently (most) defined RA and DEC.
-        The RA and DEC must be defined previous to this command being useful. The
-        normal boolean specifies if the movement is 'normal' or if the movement should
-        slew to the 'counterweight up' position. Counterweight up is for eq mounts
-        only. Returns True when command is sent and response received, otherwise will
+    def move_north(self):
+        """Commands the mount to move to the north. Mount will continue moving
+        until a stop command (stop_all_movement or stop_n_s_movement") is issued.
+        This command is similar to the up "arrow" button on the hand controller.
+        Returns True when command is sent and response received, otherwise will
         return False."""
-        if self.mount_config_data['type'] != 'equatorial' and normal is False:
-            return False
-        flip_bit = 2 if normal is False else 1
-        move_command = ":MS" + flip_bit + "#"
-        self.scope.send(move_command)
-        if self.scope.recv() == '1':
-            return True
-        return False
+        return self._move_in_cardinal_direction('north')
+
+    def move_west(self):
+        """Commands the mount to move to the west. Mount will continue moving
+        until a stop command (stop_all_movement or stop_n_s_movement") is issued.
+        This command is similar to the up "left" button on the hand controller.
+        Returns True when command is sent and response received, otherwise will
+        return False."""
+        return self._move_in_cardinal_direction('west')
 
     def park(self):
         """Park the mount at the most recently defined parking position.
@@ -590,7 +618,7 @@ class ioptron:
             self.get_time_information()
             self.get_ra_and_dec()
             self.get_alt_and_az()
-    
+  
     def refresh_status(self):
         """Performs a refresh of the 4 basic mount status commands. These are the 4 updates
         the iOptron driver performs very refresh cycle. Only perform if last update > 1

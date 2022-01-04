@@ -66,10 +66,10 @@ is broken out by the same *command groups* as in the spec doc.
 - [x] `:SPP0#` (1/3 - untested)
 - [x] `:SPP1#` (1/3 - untested)
 - [x] `:RRnnnnn#` (12/27 - untested)
-- [ ] `:mn#`
-- [ ] `:me#`
-- [ ] `:ms#`
-- [ ] `:mw#`
+- [x] `:mn#` (1/3 - untested)
+- [x] `:me#` (1/3 - untested)
+- [x] `:ms#` (1/3 - untested)
+- [x] `:mw#` (1/3 - untested)
 - [x] `:qR#`
 - [x] `:qD#`
 
