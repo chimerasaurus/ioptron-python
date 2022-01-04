@@ -81,6 +81,6 @@ def offset_utc_time(unix, offset):
 def parse_mount_config_file(file, model):
     """Parse the given YAML config and return the sub-branch with the given
     key - used to store and parse mount-specific information."""
-    with open(file) as f:
-        yaml_data = yaml.load(f, Loader=yaml.FullLoader)
+    with open(file) as open_file:
+        yaml_data = yaml.load(open_file, Loader=yaml.FullLoader)
     return yaml_data[model]

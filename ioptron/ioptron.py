@@ -1,7 +1,9 @@
-# iOptron telescope Python interface
-# This is intended to understand how the mount works
-# If I am going to trash their software (it IS crap) I need to understand it
-# James Malone, 2021
+"""
+iOptron telescope Python interface
+This is intended to understand how the mount works
+If I am going to trash their software (it IS crap) I need to understand it
+James Malone, 2021
+"""
 
 # Imports
 from dataclasses import dataclass
@@ -11,7 +13,6 @@ from ioptron import iotty
 from ioptron import utils
 
 # Data classes
-## Altitude data
 @dataclass
 class Altitude:
     """An altitude position. Contains the arcseconds and DMS."""
@@ -19,8 +20,12 @@ class Altitude:
     degrees: float = None
     minues: int = None
     seconds: float = None
+    limit: int = None
 
-## Azimuth data
+    def get_limit_str(self):
+        """Get the altitude limit, appropriately padded."""
+        return str(self.limit).zfill(3)
+
 @dataclass
 class Azimuth:
     """An azimuth position. Contains the arcseconds and DMS."""
@@ -42,8 +47,8 @@ class Firmwares:
     """Information on the firmware istalled on the mount and components."""
     mainboard: str = None
     hand_controller: str = None
-    ra: str = None
-    dec: str = None
+    right_ascention: str = None
+    declination: str = None
 
 @dataclass
 class Location:
@@ -62,18 +67,18 @@ class Guiding:
     ra_filter_enabled: bool = None
     has_ra_filter: bool = False
 
-## RA data
 @dataclass
 class RA:
+    """Right ascension (RA) data."""
     arcseconds: float = None
     hours: int = None
     minutes: int = None
     seconds: float = None
     degrees: float = None
 
-## System status
 @dataclass
 class SystemStatus:
+    """System status information."""
     code: int = None
     description: str = None
 
@@ -88,7 +93,7 @@ class Tracking:
 
     def current_rate(self):
         """Return a string description of the current rate."""
-        if self.is_tracking == False or None:
+        if self.is_tracking is False:
             return "not tracking"
         if self.code is not None:
             return self.available_rates[self.code]
@@ -144,7 +149,7 @@ class TimeInfo:
     """Time related information."""
     utc_offset: int = None
     dst: bool = None
-    jd: int = None
+    julian_date: int = None
     unix_utc: float = None
     unix_offset: float = None
     formatted: str = None
@@ -156,6 +161,7 @@ class Hemisphere:
     location: str = None
 
 class ioptron:
+    """A class to interact with iOptron mounts using Python."""
     def __init__(self, port = ''):
         if port != '':
             self.scope = iotty.iotty(port=port)
@@ -169,7 +175,7 @@ class ioptron:
         motor_fw_info = self.get_motor_firmwares()
         self.mount_version = self.get_mount_version()
         self.firmware = Firmwares(mainboard=main_fw_info[0], hand_controller=main_fw_info[1], \
-            ra=motor_fw_info[0], dec=motor_fw_info[1])
+            right_ascention=motor_fw_info[0], declination=motor_fw_info[1])
         self.hand_controller_attached = False if 'xx' in self.firmware.hand_controller else True
         self.system_status = SystemStatus()
         self.tracking = Tracking()
@@ -178,10 +184,8 @@ class ioptron:
         self.moving_speed = MovingSpeed()
         self.guiding = Guiding()
         self.is_slewing = False
-        self.altitude_limit = None
         self.is_home = None
         self.pec = Pec()
-        self.pps = False
         self.mount_config_data = \
             utils.parse_mount_config_file('ioptron/mount_values.yaml', self.mount_version)
 
@@ -217,7 +221,7 @@ class ioptron:
         Only available on eq mountd without encoders. Returns True when command sent
         and response is received, otherwise returns False."""
         if self.mount_config_data['type'] != "equatorial" or \
-            self.mount_config_data['capabilities']['encoders'] == True:
+            self.mount_config_data['capabilities']['encoders'] is True:
             return False
         if enabled is True:
             self.scope.send(":SPP1#")
@@ -229,6 +233,8 @@ class ioptron:
 
     # To get the joke here, read the official protocol docs
     def get_all_kinds_of_status(self):
+        """Get (a lot) of status from the mount. Get location, GPS state, status, movement
+        and tracking information, and time data."""
         self.scope.send(":GLS#")
         response_data = self.scope.recv()
 
@@ -337,7 +343,7 @@ class ioptron:
         stop if it exceeds this value."""
         self.scope.send(':GAL#')
         returned_data = self.scope.recv()
-        self.altitude_limit = returned_data[0:3]
+        self.altitude.limit = int(returned_data[0:3])
 
     def get_coordinate_memory(self):
         """Get the number of positions available to store RC and DEC positions that
@@ -366,7 +372,7 @@ class ioptron:
         """Get the integrity of the PEC. Returns (and sets) if it is complete or incomplete.
         Only available with eq mounts without encoders"""
         if self.mount_config_data['type'] != "equatorial" or \
-            self.mount_config_data['capabilities']['encoders'] == True:
+            self.mount_config_data['capabilities']['encoders'] is True:
             return
         # Continue - is an EQ mount without encoders
         self.scope.send(':GPE#')
@@ -462,7 +468,8 @@ class ioptron:
         # RA
         right_asc = returned_data[9:18]
         self.right_ascension.arcseconds = float(right_asc)
-        self.right_ascension.degrees = utils.convert_arc_seconds_to_degrees(self.right_ascension.arcseconds)
+        self.right_ascension.degrees = \
+            utils.convert_arc_seconds_to_degrees(self.right_ascension.arcseconds)
         hms = utils.convert_arc_seconds_to_hms(right_asc)
         self.right_ascension.hours = hms[0]
         self.right_ascension.minutes = hms[1]
@@ -513,8 +520,9 @@ class ioptron:
             response_data = self.scope.recv()
         self.time.utc_offset = int(response_data[0:4])
         self.time.dst = False if response_data[4:5] == '0' else True
-        self.time.jd = int(response_data[5:18].lstrip("0"))
-        self.time.unix_utc = utils.convert_j2k_to_unix_utc(self.time.jd, self.time.utc_offset)
+        self.time.julian_date = int(response_data[5:18].lstrip("0"))
+        self.time.unix_utc = utils.convert_j2k_to_unix_utc(\
+            self.time.julian_date, self.time.utc_offset)
         self.time.unix_offset = utils.offset_utc_time(self.time.unix_utc, self.time.utc_offset)
         self.time.formatted = utils.convert_unix_to_formatted(self.time.unix_offset)
 
@@ -618,7 +626,7 @@ class ioptron:
             self.get_time_information()
             self.get_ra_and_dec()
             self.get_alt_and_az()
-  
+
     def refresh_status(self):
         """Performs a refresh of the 4 basic mount status commands. These are the 4 updates
         the iOptron driver performs very refresh cycle. Only perform if last update > 1
@@ -636,8 +644,8 @@ class ioptron:
     def set_altitude_limit(self, limit: int):
         """Set the maximum altitude limt, in degrees. Applies to tracking and slewing. Motion will
         stop if it exceeds this value. Limit is +/- 89 degrees. Returns True after command sent."""
-        self.altitude_limit = str(limit).zfill(3)
-        set_command = ":SAL" + self.altitude_limit + "#" # Pad with zeros when single digit
+        self.altitude.limit = limit
+        set_command = ":SAL" + self.altitude.get_limit_str() + "#" # Pad with 0's when single digit
         self.scope.send(set_command)
         # Get the response; do nothing with it
         self.scope.recv()
@@ -662,7 +670,7 @@ class ioptron:
         Returns True when command is sent and response received, otherwise returns False."""
         arcseconds = str(utils.convert_dms_to_arc_seconds(degrees, minutes, seconds)).zfill(8)
         command_dict = {'ra': 'SRA', 'dec': 'Sds', 'alt': 'Sas', 'az': 'Sz'}
-        assert axis in command_dict.keys()
+        assert axis in command_dict
         axis_command = ":" + command_dict[axis] + arcseconds + "#"
         self.scope.send(axis_command)
         if self.scope.recv() == '1':
@@ -877,7 +885,7 @@ class ioptron:
         self.scope.recv()
 
     def set_tracking_rate(self, rate):
-        """Set the tracking rate of the mount. 
+        """Set the tracking rate of the mount.
         Rate must be one supported by the mount (tracking.available_rates)
         Returns True once command is sent and response reveived, otherwise
         False is returned."""
