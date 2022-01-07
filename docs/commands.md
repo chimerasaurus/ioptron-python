@@ -49,14 +49,14 @@ is broken out by the same *command groups* as in the spec doc.
 - [X] `:Q#`
 - [x] `:ST0#` (1/3 - untested)
 - [x] `:ST1#` (1/3 - untested)
-- [ ] `:ZSXXXXX#`
-- [ ] `:ZQXXXXX#`
-- [ ] `:ZEXXXXX#`
-- [ ] `:ZCXXXXX#`
-- [ ] `:MnXXXXX#`
-- [ ] `:MeXXXXX#`
-- [ ] `:MsXXXXX#`
-- [ ] `:MwXXXXX#`
+- [x] `:ZSXXXXX#` (1/6 - untested)
+- [x] `:ZQXXXXX#` (1/6 - untested)
+- [x] `:ZEXXXXX#` (1/6 - untested)
+- [x] `:ZCXXXXX#` (1/6 - untested)
+- [ ] `:MnXXXXX#` - deprecated, do not implement
+- [ ] `:MeXXXXX#` - deprecated, do not implement
+- [ ] `:MsXXXXX#` - deprecated, do not implement
+- [ ] `:MwXXXXX#` - deprecated, do not implement
 - [x] `:MP1#`
 - [x] `:MP0#`
 - [X] `:MH#`

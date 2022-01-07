@@ -545,6 +545,18 @@ class ioptron:
             self.scope.recv()
         # Maybe worth throwing an exception
 
+    def move_dec_negative(self, seconds: int = 0):
+        """Move the mount in the DEC- position at the current tracking rate for
+        the given number of seconds (0-99999), with zero seconds being the
+        default. Will return True once command is sent."""
+        return self._move_in_direction_for_n_seconds('dec-', seconds)
+
+    def move_dec_positive(self, seconds: int = 0):
+        """Move the mount in the DEC+ position at the current tracking rate for
+        the given number of seconds (0-99999), with zero seconds being the
+        default. Will return True once command is sent."""
+        return self._move_in_direction_for_n_seconds('dec+', seconds)
+
     def move_east(self):
         """Commands the mount to move to the east. Mount will continue moving
         until a stop command (stop_all_movement or stop_n_s_movement") is issued.
@@ -557,13 +569,40 @@ class ioptron:
         """PRIVATE method to move the mount in the supplied cardinal direction.
         Returns True when command is sent and response received, otherwise will
         return False."""
-        assert direction.lower() in direction.keys()
         directions = {'north': "mn", 'east': 'me', 'south': 'ms', 'west': 'mw'}
+        assert direction.lower() in directions
         move_command = ":" + directions[direction.lower()] + "#"
         self.scope.send(move_command)
         if self.scope.recv() == '1':
             return True
         return False
+
+    def _move_in_direction_for_n_seconds(self, direction: str, seconds: int):
+        """PRIVATE method to move in a direction (RA, DEC +/-) for a given number
+        of seconds. This method is to be used by methods that implement movement in
+        a specific direction. Given direction must be in [ra+, ra-, dec+, dec-].
+        Returns True once command is sent."""
+        # Validate the arguments
+        directions = {'ra+': "ZS", 'ra-': 'ZQ', 'dec+': 'ZE', 'dec-': 'ZC'}
+        assert direction.lower() in directions
+        assert 0 <= seconds <= 99999
+        # Form and send the move command
+        move_command = ":" + directions[direction.lower()] + seconds + "#"
+        self.scope.send(move_command)
+        self.scope.recv() # No output is returned
+        return True
+
+    def move_ra_negative(self, seconds: int = 0):
+        """Move the mount in the RA- position at the current tracking rate for
+        the given number of seconds (0-99999), with zero seconds being the
+        default. Will return True once command is sent."""
+        return self._move_in_direction_for_n_seconds('ra-', seconds)
+
+    def move_ra_positive(self, seconds: int = 0):
+        """Move the mount in the RA+ position at the current tracking rate for
+        the given number of seconds (0-99999), with zero seconds being the
+        default. Will return True once command is sent."""
+        return self._move_in_direction_for_n_seconds('ra+', seconds)
 
     def move_south(self):
         """Commands the mount to move to the south. Mount will continue moving
