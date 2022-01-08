@@ -6,7 +6,9 @@ James Malone, 2021
 """
 
 # Imports
+import configparser
 from dataclasses import dataclass
+import logging
 import time
 from serial.serialutil import SerialException
 from ioptron import iotty
@@ -162,9 +164,10 @@ class Hemisphere:
 
 class ioptron:
     """A class to interact with iOptron mounts using Python."""
-    def __init__(self, port = ''):
-        if port != '':
-            self.scope = iotty.iotty(port=port)
+    def __init__(self):
+        config = self._parse_config()
+        if config['port'] != '':
+            self.scope = iotty.iotty(port=config['port'], baud=config['baud'], log_level = config['log_level'])
             self.scope.open()
         else:
             raise SerialException
@@ -651,6 +654,24 @@ class ioptron:
             # Mount was mot parked OK
             self.parking.is_parked = False
         return self.parking.is_parked
+
+    def _parse_config(self):
+        """PRIVATE method to parse the config file. Retruns a data structure
+        of config information."""
+        config= configparser.ConfigParser()
+        config.read('config.ini')
+        config_details = {}
+        config_details['port'] = config['DEFAULT']['SerialPort']
+        config_details['baud'] = int(config['DEFAULT']['SerialSpeed'])
+        # Set up logging
+        log_levels = {
+            'logging.DEBUG': logging.DEBUG,
+            'logging.INFO': logging.INFO,
+            'logging.WARNING': logging.WARNING,
+            'logging.ERROR': logging.ERROR,
+            }
+        config_details['log_level'] = log_levels.get(config['DEFAULT']['LogLevel'], logging.ERROR)
+        return config_details
 
     def parse_moving_speed(self, rate):
         """Return the mount's current tracking speed in factors of sidarial rate."""

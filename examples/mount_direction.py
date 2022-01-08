@@ -1,7 +1,7 @@
 import ioptron as iom
 import ioptron.ioptron as iopt 
 
-scope = iopt.ioptron('COM5')
+scope = iopt.ioptron()
 print("Version #:  {}".format(scope.mount_version))
 
 # Get the mount's direction
@@ -32,3 +32,9 @@ print("Alt - DMS:  {}".format((hms)))
 print("Az - ARCs:  {}".format(scope.azimuth.arcseconds))
 hms = [scope.azimuth.degrees, scope.azimuth.minues, scope.azimuth.seconds]
 print("Az - DMS:  {}".format(hms))
+print("<< ENDING test of :GAC# <<")
+
+# Get and set positions
+print(">> STARTING test of :QAP# >>")
+print("Memory positions:  {}".format(scope.get_coordinate_memory()))
+print("<< ENDING test of :QAP# <<")

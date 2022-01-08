@@ -3,7 +3,6 @@ Module for interfacing and communicating with stuff over serial.
 @author - James Malone
 """
 
-import configparser
 import logging
 import sys
 import time
@@ -11,23 +10,10 @@ import serial
 
 class iotty:
     """Class for communicating with devices over serial."""
-    def __init__(self):
-        config= configparser.ConfigParser()
-        config.read('config.ini')
-        # Set up logging
-        log_levels = {
-            'logging.DEBUG': logging.DEBUG,
-            'logging.INFO': logging.INFO,
-            'logging.WARNING': logging.WARNING,
-            'logging.ERROR': logging.ERROR,
-            }
-        set_log_level = log_levels.get(config['DEFAULT']['LOG_LEVEL'], logging.ERROR)
+    def __init__(self, port = 'COM5', baud = 115200, log_level = logging.INFO):
         self.send_wait = 0.20 # Arbritrary waiting period to save flooding comms
         logging.basicConfig(filename='iotty.log', format='%(asctime)s - %(message)s',\
-            level=set_log_level)
-        # Set COM details
-        port = config['DEFAULT']['SERIAL_PORT']
-        baud = int(config['DEFAULT']['SERIAL_SPEED'])
+            level=log_level)
         try:
             self.ser = serial.Serial(port, baud)
         except serial.SerialException:
