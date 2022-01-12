@@ -38,3 +38,17 @@ print("<< ENDING test of :GAC# <<")
 print(">> STARTING test of :QAP# >>")
 print("Memory positions:  {}".format(scope.get_coordinate_memory()))
 print("<< ENDING test of :QAP# <<")
+
+# Get and set button movement speed
+print(">> STARTING test of :SRn# >>")
+print("Setting movement rate to 128x:  {}".format(scope.set_arrow_button_movement_speed(6)))
+print("<< ENDING test of :SRn# <<")
+
+# Test auto guiding of RA
+# NOTE: I cannot really test these; do not have an EC mount
+print(">> STARTING test of :SGF1# >>")
+print("Enable filter:  {}".format(scope.set_ra_guiding_filter_status(True)))
+print("<< ENDING test of :SGF1# <<")
+print(">> STARTING test of :SGF0# >>")
+print("Disable filter:  {}".format(scope.set_ra_guiding_filter_status(False)))
+print("<< ENDING test of :SGF0# <<")

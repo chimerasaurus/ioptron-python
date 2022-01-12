@@ -25,9 +25,9 @@ is broken out by the same *command groups* as in the spec doc.
 - [x] `:RT2#`
 - [x] `:RT3#`
 - [x] `:RT4#`
-- [x] `:SRn#` (12/30 - untested)
-- [x] `:SGF0#` (12/30 - untested)
-- [x] `:SGF1#` (12/30 - untested)
+- [x] `:SRn#` (12/30)
+- [x] `:SGF0#` (12/30)
+- [x] `:SGF1#` (12/30)
 - [x] `:SGsMMM#` (12/27)
 - [x] `:SDS0#` (12/26)
 - [x] `:SDS1#` (12/26)
@@ -61,10 +61,10 @@ is broken out by the same *command groups* as in the spec doc.
 - [x] `:MP0#`
 - [X] `:MH#`
 - [X] `:MSH#`
-- [x] `:SPR0#` (12/27 - untested)
-- [x] `:SPR1#` (12/27 - untested)
-- [x] `:SPP0#` (1/3 - untested)
-- [x] `:SPP1#` (1/3 - untested)
+- [x] `:SPR0#` (12/27)
+- [x] `:SPR1#` (12/27)
+- [x] `:SPP0#` (1/3)
+- [x] `:SPP1#` (1/3)
 - [x] `:RRnnnnn#` (12/27 - untested)
 - [x] `:mn#` (1/3 - untested)
 - [x] `:me#` (1/3 - untested)

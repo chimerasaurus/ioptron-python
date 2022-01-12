@@ -1,7 +1,7 @@
 import ioptron as iom
 import ioptron.ioptron as iopt 
 
-scope = iopt.ioptron('COM5')
+scope = iopt.ioptron()
 # Get custom tracking rate
 scope.get_custom_tracking_rate()
 print("TRACKING: custom rate:: {}".format(scope.tracking.custom))
@@ -10,8 +10,7 @@ print("TRACKING: custom rate:: {}".format(scope.tracking.custom))
 print("SLEWING: max speed:: {}".format(scope.get_max_slewing_speed()))
 
 # Get altitude limit
-scope.get_altitude_limit()
-print("ALTITUDE: max limit:: {}".format(scope.altitude_limit))
+print("ALTITUDE: max limit:: {}".format(scope.get_altitude_limit()))
 
 # Get ra and dec guiding rates
 scope.get_guiding_rate()

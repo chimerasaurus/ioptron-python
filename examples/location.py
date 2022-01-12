@@ -2,7 +2,7 @@ import ioptron as iom
 import ioptron.ioptron as iopt 
 import time
 
-scope = iopt.ioptron('COM5')
+scope = iopt.ioptron()
 # Refresh the status of the mount
 scope.refresh_status()
 time.sleep(2)

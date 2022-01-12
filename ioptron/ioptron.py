@@ -207,8 +207,8 @@ class ioptron:
         # Parking
         self.parking = Parking()
 
-        # Apply the latest update time
-        self.last_update = time.time()
+        # Set the update time to null
+        self.last_update = 0
 
     # Destructor that gets called when the object is destroyed
     def __del__(self):
@@ -347,6 +347,7 @@ class ioptron:
         self.scope.send(':GAL#')
         returned_data = self.scope.recv()
         self.altitude.limit = int(returned_data[0:3])
+        return self.altitude.limit
 
     def get_coordinate_memory(self):
         """Get the number of positions available to store RC and DEC positions that
@@ -716,9 +717,12 @@ class ioptron:
         given as a multiplier of siderial (e.g. 2 for 2x or 64 for 64x.) The value
         supplied must be supported by the mount. This value is wiped and replaced
         by the default (64x) on the next powerup. Returns True after command is sent."""
+        # Perform a refresh of info to ensure we have the latest values
+        self.update_status()
+        # Set the rate
         assert rate in self.moving_speed.available_rates
         self.moving_speed.button_rate = rate
-        movement_command = ":SR" + rate + "#"
+        movement_command = ":SR" + str(rate) + "#"
         self.scope.send(movement_command)
         # Get the response; do nothing with it
         self.scope.recv()
@@ -969,12 +973,20 @@ class ioptron:
             print("PEC recording not usable with this mount")
 
     def start_recording_pec(self):
-        """Start recording the periodic error. Only used in eq mounts without encoders."""
+        """Start recording the periodic error. Only used in eq mounts without encoders.
+        Returns True if command was sent and response received, otherwise will return False."""
         self._toggle_pec_recording(True)
+        if self.scope.recv() == '1':
+            return True
+        return False
 
     def stop_recording_pec(self):
-        """Stop recording the periodic error. Only used in eq mounts without encoders."""
+        """Stop recording the periodic error. Only used in eq mounts without encoders.
+        Returns True if command was sent and response received, otherwise will return False."""
         self._toggle_pec_recording(False)
+        if self.scope.recv() == '1':
+            return True
+        return False
 
     def start_tracking(self):
         """Commands the mount to start tracking. Returns True when command is sent and
@@ -1037,3 +1049,5 @@ class ioptron:
             self.get_all_kinds_of_status()
             self.get_time_information()
             self.get_ra_and_dec()
+        # Apply the latest update time
+        self.last_update = time.time()

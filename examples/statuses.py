@@ -1,7 +1,7 @@
 import ioptron as iom
 import ioptron.ioptron as iopt 
 
-scope = iopt.ioptron('COM5')
+scope = iopt.ioptron()
 print(">> Starting test of :GLS# >>")
 scope.get_all_kinds_of_status()
 
